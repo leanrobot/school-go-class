@@ -2,8 +2,6 @@
 Assignment 2: Personalized Time Server.
 Written by Tom Petit (c) 2015
 Winter 2015, CSS 490 - Tactical Software Engineering
-
-version: 2.0_assign2
 */
 
 // The timeserver package contains a simple time server created for assignment one.
