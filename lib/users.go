@@ -55,6 +55,10 @@ func (ud *UserData) GetUser(id Uuid) (name string, err error) {
 	}
 }
 
-// func (ud *UserData) RemoveUser(id Uuid) {
-
-// }
+func (ud *UserData) RemoveUser(id Uuid) error {
+    if _, exists := ud.names[id]; exists {
+        delete(ud.names, id)
+        return nil
+    }
+    return errors.New("User with id does not exist")
+}
