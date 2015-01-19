@@ -26,6 +26,33 @@ import (
 - https://ruin.io/2014/godoc-homebrew-go/
 */
 
+/*
+TODO:
+	- add handler for view
+		- / and /index.html
+			- if logged in, write "Greetings, <name>".
+			- if not, then show the login form.
+		- /login/?name=...
+			- if not logged in, generate a cookie with uuid. then redirect to /
+			- no name param? say "C'mon, I need a name."
+		- /logout/
+			- clear the uuid cookie if it exists. Display goodbye for 10 seconds,
+				then redirect to the home page.
+		- /time/
+			- if logged in, show "The time is now <time>, <name>."
+			- if not, just show the time per assignment one.
+
+*/
+
+type HtmlData struct {
+	head string
+	body string
+}
+
+func (hd *HtmlData) GetHtml() string {
+	return fmt.Sprintf(base_html, hd.head, hd.body)
+}
+
 //BUG URLs that are prefixed with '/time/' are still recognized as valid.
 //For instance, '/time/notvalid' still returns the time and 200.
 
@@ -62,7 +89,7 @@ func main() {
 // considered the only valid url on the timeserver.
 func Handler200(resStream http.ResponseWriter, req *http.Request) {
 	var curTime string = time.Now().Local().Format(TIME_LAYOUT)
-	io.WriteString(resStream, fmt.Sprintf(html_200, curTime))
+	io.WriteString(resStream, fmt.Sprintf(timeHtml.GetHtml(), curTime, ""))
 
 	logRequest(req, http.StatusOK)
 }
@@ -71,7 +98,7 @@ func Handler200(resStream http.ResponseWriter, req *http.Request) {
 // that is everything except for "/time/"
 func Handler404(resStream http.ResponseWriter, req *http.Request) {
 	resStream.WriteHeader(http.StatusNotFound)
-	io.WriteString(resStream, html_404)
+	io.WriteString(resStream, notFoundHtml.GetHtml())
 
 	logRequest(req, http.StatusNotFound)
 }
@@ -105,27 +132,46 @@ Winter 2015, CSS 490 - Tactical Software Engineering
 version: 1.0_assign1
 `
 
-// The html returned for a successful request. The time needs to be inserted
-// as a string using Printf or Sprintf.
-const html_200 = `
+const base_html = `
 <html>
-<head>
-	<style>
-		p { font-size: xx-large }
-		span.time { color : red }
-	</style>
-</head>
-<body>
-	<p>The time is now <span class="time">%s</span>.</p>
-</body>
+<head>%s</head>
+<body>%s</body>
 </html>
 `
 
-// The html returned for an unknown page on the webserver.
-const html_404 = `
-<html>
-<body>
-	<p>These are not the URLs you're looking for.</p>
-</body>
-</html>
-`
+var (
+	timeHtml = HtmlData{
+		head: `
+			<style>
+				p { font-size: xx-large }
+				span.time { color : red }
+			</style>
+		`,
+		body: `<p>The time is now <span class="time">%s</span>%s.</p>`,
+	}
+
+	loginHtml = HtmlData{
+		head:"",
+		body: `
+			<p>
+				<form method="POST" action="/login/">
+					What is your name, Earthling?
+					<input type="text" name="name" size="50">
+					<input type="submit">
+				</form>
+			</p>
+		`,
+	}
+
+	logoutHtml = HtmlData{
+		head: `<META http-equiv="refresh" content="10;URL=/">`,
+		body: `<p>Good-bye.</p>`,
+	}
+
+	notFoundHtml = HtmlData{
+		head: "",
+		body: `<p>These are not the URLs you're looking for.</p>`,
+	}
+
+
+)
