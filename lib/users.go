@@ -2,10 +2,10 @@ package lib
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"io"
-    "time"
-    "errors"
+	"time"
 )
 
 type Uuid string
@@ -16,7 +16,7 @@ type UserData struct {
 	names map[Uuid]string
 }
 
-func MakeUserData() *UserData {
+func NewUserData() *UserData {
 	var newMap = make(map[Uuid]string)
 	newUserData := UserData{names: newMap}
 	return &newUserData
@@ -28,18 +28,19 @@ the user and a unique id. The id is returned, or an error in the event that
 the user could not be created.
 */
 func (ud *UserData) AddUser(name string) (id Uuid, err error) {
-	//compute the unique id using the name 
+	// compute the id hash using the name and the current time
+	// to avoid collision.
 	idHash := md5.New()
 	io.WriteString(idHash, name)
 	io.WriteString(idHash, time.Now().Format(time.UnixDate))
 
 	id = Uuid(fmt.Sprintf("%x", idHash.Sum(nil)))
-	// the name doesn't exist
 	if _, exists := ud.names[id]; !exists {
+		// no uuid collision in the map, create the user and return their id.
 		ud.names[id] = name
 		return id, nil
 	}
-	return "", errors.New("Hash collision, could not create user")
+	return "", errors.New("uuid collision, could not create user")
 }
 
 /*
@@ -56,9 +57,9 @@ func (ud *UserData) GetUser(id Uuid) (name string, err error) {
 }
 
 func (ud *UserData) RemoveUser(id Uuid) error {
-    if _, exists := ud.names[id]; exists {
-        delete(ud.names, id)
-        return nil
-    }
-    return errors.New("User with id does not exist")
+	if _, exists := ud.names[id]; exists {
+		delete(ud.names, id)
+		return nil
+	}
+	return errors.New("User with id does not exist")
 }

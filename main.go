@@ -8,6 +8,8 @@ Winter 2015, CSS 490 - Tactical Software Engineering
 package main
 
 import (
+	"bitbucket.org/thopet/assign2/lib"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -44,14 +46,7 @@ TODO:
 
 */
 
-type HtmlData struct {
-	head string
-	body string
-}
-
-func (hd *HtmlData) GetHtml() string {
-	return fmt.Sprintf(base_html, hd.head, hd.body)
-}
+var userData *lib.UserData
 
 //BUG URLs that are prefixed with '/time/' are still recognized as valid.
 //For instance, '/time/notvalid' still returns the time and 200.
@@ -72,8 +67,10 @@ func main() {
 	// setup and start the webserver.
 	var portString string = fmt.Sprintf(":%d", *port)
 
-	http.HandleFunc("/", Handler404)
-	http.HandleFunc("/time/", Handler200)
+	userData = lib.NewUserData()
+
+	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/time/", timeHandler)
 
 	fmt.Printf("Timeserver listening on 0.0.0.0%s\n", portString)
 	err := http.ListenAndServe(portString, nil)
@@ -85,18 +82,53 @@ func main() {
 	fmt.Println("Timeserver exiting..")
 }
 
-// Handler200 is the web handler for hits to /time on the webserver. This is
-// considered the only valid url on the timeserver.
-func Handler200(resStream http.ResponseWriter, req *http.Request) {
+func getUsername(req *http.Request) (username string, err error) {
+
+	if cookie, err := req.Cookie("assign2"); err == nil {
+		uuid := lib.Uuid(cookie.Value)
+		if username, err := userData.GetUser(uuid); err == nil {
+			return username, nil
+		}
+	}
+	return "", errors.New("No valid user uuid was found with an associated name")
+}
+
+func indexHandler(resStream http.ResponseWriter, req *http.Request) {
+	// Extra handling is required to add 404 pages.
+	if url := req.URL.Path; url != "/" || url != "/index.html" {
+		notFoundHandler(resStream, req)
+		return
+	}
+
+	// set the username based on the cookie if possible
+	// usernameInsert := ""
+	// uuid, err := getUuid(req)
+	// if err == nil {
+	// 	if username, err := userData.GetUser(uuid); err == nil {
+	// 		usernameInsert = ", " + username
+	// 	}
+	// }
+	username, err := getUsername(req)
+
+	if err == nil {
+		// a username was found, greet them.
+		insertUsernameHtml := fmt.Sprintf(indexHtml.GetHtml(), username)
+		io.WriteString(resStream, insertUsernameHtml)
+	} else {
+		// no username was found, display the login page.
+		io.WriteString(resStream, loginHtml.GetHtml())
+	}
+
+}
+
+func timeHandler(resStream http.ResponseWriter, req *http.Request) {
 	var curTime string = time.Now().Local().Format(TIME_LAYOUT)
 	io.WriteString(resStream, fmt.Sprintf(timeHtml.GetHtml(), curTime, ""))
 
 	logRequest(req, http.StatusOK)
 }
 
-// Handler404 is the handler for pages that do not exist. For this time server,
-// that is everything except for "/time/"
-func Handler404(resStream http.ResponseWriter, req *http.Request) {
+func notFoundHandler(resStream http.ResponseWriter, req *http.Request) {
 	resStream.WriteHeader(http.StatusNotFound)
 	io.WriteString(resStream, notFoundHtml.GetHtml())
 
@@ -122,6 +154,15 @@ func logRequest(req *http.Request, statusCode int) {
 	fmt.Println("")
 }
 
+type HtmlData struct {
+	head string
+	body string
+}
+
+func (hd *HtmlData) GetHtml() string {
+	return fmt.Sprintf(BASE_HTML, hd.head, hd.body)
+}
+
 const TIME_LAYOUT = "3:04:05 PM"
 const DEFAULT_PORT = 8080
 
@@ -132,13 +173,15 @@ Winter 2015, CSS 490 - Tactical Software Engineering
 version: 1.0_assign1
 `
 
-const base_html = `
+const BASE_HTML = `
 <html>
 <head>%s</head>
 <body>%s</body>
 </html>
 `
 
+// TODO(assign2): constant structs?
+// These ARE constant. They are not declared as const because they are structs.
 var (
 	timeHtml = HtmlData{
 		head: `
@@ -151,7 +194,7 @@ var (
 	}
 
 	loginHtml = HtmlData{
-		head:"",
+		head: "",
 		body: `
 			<p>
 				<form method="POST" action="/login/">
@@ -163,6 +206,11 @@ var (
 		`,
 	}
 
+	indexHtml = HtmlData{
+		head: "<style>#text { font-style: italic }</style>",
+		body: "<p>Greetings, %s</p>",
+	}
+
 	logoutHtml = HtmlData{
 		head: `<META http-equiv="refresh" content="10;URL=/">`,
 		body: `<p>Good-bye.</p>`,
@@ -172,6 +220,4 @@ var (
 		head: "",
 		body: `<p>These are not the URLs you're looking for.</p>`,
 	}
-
-
 )
