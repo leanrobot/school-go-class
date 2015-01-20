@@ -44,6 +44,7 @@ TODO:
 			- if logged in, show "The time is now <time>, <name>."
 			- if not, just show the time per assignment one.
 	- add a mutex for the userData struct.
+	- add logging to new handlers
 */
 
 var userData *lib.UserData
@@ -71,6 +72,7 @@ func main() {
 
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/login/", loginHandler)
+	http.HandleFunc("/logout/", logoutHandler)
 	http.HandleFunc("/time/", timeHandler)
 
 	fmt.Printf("Timeserver listening on 0.0.0.0%s\n", portString)
@@ -121,6 +123,7 @@ func login(res http.ResponseWriter, username string) error {
 		Name:	COOKIE_NAME,
 		Path:	"/",
 		Value:	string(uuid),
+		MaxAge: 604800, // 7 days
 	}
 	http.SetCookie(res, &cookie)
 	return nil
@@ -135,6 +138,21 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	http.Redirect(res, req, "/", http.StatusFound)
 }
+
+//TODO (assign2) add error handling?
+func logout(res http.ResponseWriter, req *http.Request) {
+	cookie, _ := req.Cookie(COOKIE_NAME)
+	userData.RemoveUser(lib.Uuid(cookie.Value))
+	cookie.MaxAge = -1
+	cookie.Value = "LOGGED_OUT_CLEAR_DATA"
+	http.SetCookie(res, cookie)
+}
+
+func logoutHandler(res http.ResponseWriter, req *http.Request) {
+	logout(res, req)
+	io.WriteString(res, logoutHtml.GetHtml())
+}
+
 
 func timeHandler(resStream http.ResponseWriter, req *http.Request) {
 	var curTime string = time.Now().Local().Format(TIME_LAYOUT)
@@ -228,7 +246,7 @@ var (
 	}
 
 	logoutHtml = HtmlData{
-		head: `<META http-equiv="refresh" content="10;URL=/">`,
+		head: `<META http-equiv="refresh" content="3;URL=/">`,
 		body: `<p>Good-bye.</p>`,
 	}
 
