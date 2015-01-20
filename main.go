@@ -43,7 +43,7 @@ TODO:
 		- /time/
 			- if logged in, show "The time is now <time>, <name>."
 			- if not, just show the time per assignment one.
-
+	- add a mutex for the userData struct.
 */
 
 var userData *lib.UserData
@@ -70,6 +70,7 @@ func main() {
 	userData = lib.NewUserData()
 
 	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/time/", timeHandler)
 
 	fmt.Printf("Timeserver listening on 0.0.0.0%s\n", portString)
@@ -83,8 +84,7 @@ func main() {
 }
 
 func getUsername(req *http.Request) (username string, err error) {
-
-	if cookie, err := req.Cookie("assign2"); err == nil {
+	if cookie, err := req.Cookie(COOKIE_NAME); err == nil {
 		uuid := lib.Uuid(cookie.Value)
 		if username, err := userData.GetUser(uuid); err == nil {
 			return username, nil
@@ -95,21 +95,13 @@ func getUsername(req *http.Request) (username string, err error) {
 
 func indexHandler(resStream http.ResponseWriter, req *http.Request) {
 	// Extra handling is required to add 404 pages.
-	if url := req.URL.Path; url != "/" || url != "/index.html" {
+	if url := req.URL.Path; url != "/" && url != "/index.html" {
+		fmt.Println(url)
 		notFoundHandler(resStream, req)
 		return
 	}
 
-	// set the username based on the cookie if possible
-	// usernameInsert := ""
-	// uuid, err := getUuid(req)
-	// if err == nil {
-	// 	if username, err := userData.GetUser(uuid); err == nil {
-	// 		usernameInsert = ", " + username
-	// 	}
-	// }
 	username, err := getUsername(req)
-
 	if err == nil {
 		// a username was found, greet them.
 		insertUsernameHtml := fmt.Sprintf(indexHtml.GetHtml(), username)
@@ -119,6 +111,29 @@ func indexHandler(resStream http.ResponseWriter, req *http.Request) {
 		io.WriteString(resStream, loginHtml.GetHtml())
 	}
 
+}
+
+func login(res http.ResponseWriter, username string) error {
+	// create a cookie
+	//TODO(assign2): error handling for hash collision?
+	uuid, _ := userData.AddUser(username)
+	cookie := http.Cookie {
+		Name:	COOKIE_NAME,
+		Path:	"/",
+		Value:	string(uuid),
+	}
+	http.SetCookie(res, &cookie)
+	return nil
+	//return "", errors.New("No valid user uuid was found with an associated name")
+}
+
+func loginHandler(res http.ResponseWriter, req *http.Request) {
+	if req.Method == "POST" {
+		// get the requested username
+		username := req.FormValue("name")
+		login(res, username)
+	}
+	http.Redirect(res, req, "/", http.StatusFound)
 }
 
 func timeHandler(resStream http.ResponseWriter, req *http.Request) {
@@ -163,6 +178,7 @@ func (hd *HtmlData) GetHtml() string {
 	return fmt.Sprintf(BASE_HTML, hd.head, hd.body)
 }
 
+const COOKIE_NAME = "assign2"
 const TIME_LAYOUT = "3:04:05 PM"
 const DEFAULT_PORT = 8080
 
