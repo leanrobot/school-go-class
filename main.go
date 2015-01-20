@@ -31,18 +31,11 @@ import (
 /*
 TODO:
 	- add handler for view
-		- / and /index.html
-			- if logged in, write "Greetings, <name>".
-			- if not, then show the login form.
 		- /login/?name=...
 			- if not logged in, generate a cookie with uuid. then redirect to /
 			- no name param? say "C'mon, I need a name."
 		- /logout/
-			- clear the uuid cookie if it exists. Display goodbye for 10 seconds,
-				then redirect to the home page.
-		- /time/
-			- if logged in, show "The time is now <time>, <name>."
-			- if not, just show the time per assignment one.
+			- BUG(assign2): client does not delete cookie (for some reason)
 	- add a mutex for the userData struct.
 	- add logging to new handlers
 */
@@ -155,8 +148,14 @@ func logoutHandler(res http.ResponseWriter, req *http.Request) {
 
 
 func timeHandler(resStream http.ResponseWriter, req *http.Request) {
+	usernameInsert := ""
+	if 	username, err := getUsername(req); err == nil {
+		usernameInsert = ", " + username
+	}
+
 	var curTime string = time.Now().Local().Format(TIME_LAYOUT)
-	io.WriteString(resStream, fmt.Sprintf(timeHtml.GetHtml(), curTime, ""))
+	io.WriteString(resStream, fmt.Sprintf(timeHtml.GetHtml(), 
+		curTime, usernameInsert))
 
 	logRequest(req, http.StatusOK)
 }
