@@ -50,6 +50,7 @@ Learning in this assignment:
 */
 
 var userData *lib.UserData
+var dataMutex *sync.Mutex
 
 //BUG URLs that are prefixed with '/time/' are still recognized as valid.
 //For instance, '/time/notvalid' still returns the time and 200.
@@ -71,6 +72,7 @@ func main() {
 	var portString string = fmt.Sprintf(":%d", *port)
 
 	userData = lib.NewUserData()
+	dataMutex = new(sync.Mutex)
 
 	// View Handler
 	vh := lib.NewStrictHandler()
@@ -128,7 +130,11 @@ func indexHandler(resStream http.ResponseWriter, req *http.Request) {
 func login(res http.ResponseWriter, username string) error {
 	// create a cookie
 	//TODO(assign2): error handling for hash collision?
+	dataMutex.Lock()
+	fmt.Fprintln(os.Stderr, "login(): Mutex Lock")
 	uuid, _ := userData.AddUser(username)
+	dataMutex.Unlock()
+	fmt.Fprintln(os.Stderr, "login(): Mutex Unlock")
 	cookie := http.Cookie{
 		Name:   COOKIE_NAME,
 		Path:   "/",
@@ -154,7 +160,13 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 //TODO (assign2) add error handling?
 func logout(res http.ResponseWriter, req *http.Request) {
 	cookie, _ := req.Cookie(COOKIE_NAME)
+
+	fmt.Fprintln(os.Stderr, "logout(): Mutex Lock")
+	dataMutex.Lock()
 	userData.RemoveUser(lib.Uuid(cookie.Value))
+	dataMutex.Unlock()
+	fmt.Fprintln(os.Stderr, "logout(): Mutex Unlock")
+
 	cookie.MaxAge = -1
 	cookie.Value = "LOGGED_OUT_CLEAR_DATA"
 	http.SetCookie(res, cookie)
