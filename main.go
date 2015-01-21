@@ -64,7 +64,8 @@ func main() {
 // considered the only valid url on the timeserver.
 func Handler200(resStream http.ResponseWriter, req *http.Request) {
 	var curTime string = time.Now().Local().Format(TIME_LAYOUT)
-	io.WriteString(resStream, fmt.Sprintf(html_200, curTime))
+	var utcTime string = time.Now().UTC().Format(MILITARY_TIME_LAYOUT)
+	io.WriteString(resStream, fmt.Sprintf(html_200, curTime, utcTime))
 
 	logRequest(req, http.StatusOK)
 }
@@ -98,6 +99,8 @@ func logRequest(req *http.Request, statusCode int) {
 }
 
 const TIME_LAYOUT = "3:04:05 PM"
+const MILITARY_TIME_LAYOUT = "15:04:05"
+
 const DEFAULT_PORT = 8080
 
 const VERSION_INFO = `
@@ -118,7 +121,7 @@ const html_200 = `
 	</style>
 </head>
 <body>
-	<p>The time is now <span class="time">%s</span>.</p>
+	<p>The time is now <span class="time">%s</span> (%s UTC).</p>
 </body>
 </html>
 `
