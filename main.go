@@ -3,7 +3,7 @@ Assignment 2: Personalized Time Server.
 Written by Tom Petit (c) 2015
 Winter 2015, CSS 490 - Tactical Software Engineering
 
-version: 2.0_assign2
+version: assignment-01.rc01
 */
 
 // The timeserver package contains a simple time server created for assignment one.
@@ -107,7 +107,7 @@ const VERSION_INFO = `
 Simple Time Server. Written by Tom Petit.
 Winter 2015, CSS 490 - Tactical Software Engineering
 
-version: 1.0_assign1
+version: assignment-01.rc01
 `
 
 // The html returned for a successful request. The time needs to be inserted
