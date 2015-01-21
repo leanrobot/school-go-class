@@ -17,27 +17,36 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"sync"
 )
-
-/* ====== Learning Resources ======
-- Standard Library Documentation
-- https://golang.org/doc/articles/wiki/
-- http://blog.golang.org/constants
-- http://stackoverflow.com/questions/17891226/golang-operator-difference-between-vs
-- https://httpd.apache.org/docs/1.3/logs.html#common
-- https://ruin.io/2014/godoc-homebrew-go/
-*/
 
 /*
 TODO:
+	- Refactor main.go into modules.
+	- dont allow a login if there is already a valid one.
+	- add a trailing / removal for StrictHandler
 	- add handler for view
 		- /login/?name=...
-			- if not logged in, generate a cookie with uuid. then redirect to /
+			- MAIN PAGE DONE
 			- no name param? say "C'mon, I need a name."
 		- /logout/
 			- BUG(assign2): client does not delete cookie (for some reason)
+				- Still is invalidated (so good).
 	- add a mutex for the userData struct.
-	- add logging to new handlers
+	- TODO(assign2): error handling for hash collision?
+
+*/
+
+/*
+Learning in this assignment:
+	- structs and receiver functions for structs.
+	- slices, maps.
+	- Custom server handlers
+	- Error handling in go.
+	- Multiple return values
+	- First-order functions.
+	- Cookies
+
 */
 
 var userData *lib.UserData
@@ -63,13 +72,21 @@ func main() {
 
 	userData = lib.NewUserData()
 
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/login/", loginHandler)
-	http.HandleFunc("/logout/", logoutHandler)
-	http.HandleFunc("/time/", timeHandler)
+	// View Handler
+	vh := lib.NewStrictHandler()
+
+	vh.HandlePatterns([]string{"/", "/index.html"}, indexHandler)
+	vh.HandlePattern("/login/", loginHandler)
+	vh.HandlePattern("/logout/", logoutHandler)
+	vh.HandlePattern("/time/", timeHandler)
+
+	server := http.Server{
+		Addr:    portString,
+		Handler: vh,
+	}
 
 	fmt.Printf("Timeserver listening on 0.0.0.0%s\n", portString)
-	err := http.ListenAndServe(portString, nil)
+	err := server.ListenAndServe()
 
 	if err != nil {
 		log.Fatal("TimeServer Failure: ", err)
@@ -91,7 +108,6 @@ func getUsername(req *http.Request) (username string, err error) {
 func indexHandler(resStream http.ResponseWriter, req *http.Request) {
 	// Extra handling is required to add 404 pages.
 	if url := req.URL.Path; url != "/" && url != "/index.html" {
-		fmt.Println(url)
 		notFoundHandler(resStream, req)
 		return
 	}
@@ -106,16 +122,17 @@ func indexHandler(resStream http.ResponseWriter, req *http.Request) {
 		io.WriteString(resStream, loginHtml.GetHtml())
 	}
 
+	logRequest(req, http.StatusOK)
 }
 
 func login(res http.ResponseWriter, username string) error {
 	// create a cookie
 	//TODO(assign2): error handling for hash collision?
 	uuid, _ := userData.AddUser(username)
-	cookie := http.Cookie {
-		Name:	COOKIE_NAME,
-		Path:	"/",
-		Value:	string(uuid),
+	cookie := http.Cookie{
+		Name:   COOKIE_NAME,
+		Path:   "/",
+		Value:  string(uuid),
 		MaxAge: 604800, // 7 days
 	}
 	http.SetCookie(res, &cookie)
@@ -129,7 +146,9 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 		username := req.FormValue("name")
 		login(res, username)
 	}
-	http.Redirect(res, req, "/", http.StatusFound)
+	http.Redirect(res, req, "/index.html", http.StatusFound)
+
+	logRequest(req, http.StatusFound)
 }
 
 //TODO (assign2) add error handling?
@@ -144,17 +163,18 @@ func logout(res http.ResponseWriter, req *http.Request) {
 func logoutHandler(res http.ResponseWriter, req *http.Request) {
 	logout(res, req)
 	io.WriteString(res, logoutHtml.GetHtml())
-}
 
+	logRequest(req, http.StatusFound)
+}
 
 func timeHandler(resStream http.ResponseWriter, req *http.Request) {
 	usernameInsert := ""
-	if 	username, err := getUsername(req); err == nil {
+	if username, err := getUsername(req); err == nil {
 		usernameInsert = ", " + username
 	}
 
 	var curTime string = time.Now().Local().Format(TIME_LAYOUT)
-	io.WriteString(resStream, fmt.Sprintf(timeHtml.GetHtml(), 
+	io.WriteString(resStream, fmt.Sprintf(timeHtml.GetHtml(),
 		curTime, usernameInsert))
 
 	logRequest(req, http.StatusOK)
@@ -203,7 +223,7 @@ const VERSION_INFO = `
 Simple Time Server. Written by Tom Petit.
 Winter 2015, CSS 490 - Tactical Software Engineering
 
-version: 1.0_assign1
+version: 1.9rc
 `
 
 const BASE_HTML = `
@@ -212,6 +232,8 @@ const BASE_HTML = `
 <body>%s</body>
 </html>
 `
+
+type HandlerFunc func(http.ResponseWriter, *http.Request)
 
 // TODO(assign2): constant structs?
 // These ARE constant. They are not declared as const because they are structs.
