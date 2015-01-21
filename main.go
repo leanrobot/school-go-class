@@ -9,7 +9,7 @@ package main
 
 
 import (
-	"bitbucket.org/thopet/assign2/lib"
+	"bitbucket.org/thopet/timeserver/lib"
 	"errors"
 	"flag"
 	"fmt"
@@ -21,8 +21,7 @@ import (
 	"sync"
 )
 
-const VERSION = "assignment-02.rc01"
-
+const VERSION = "assignment-02.rc02"
 
 /*
 TODO:
@@ -33,11 +32,7 @@ TODO:
 		- BUG(assign2): client does not delete cookie (for some reason)
 			- Still is invalidated (so good).
 	- TODO(assign2): error handling for hash collision?
-	- Fork request from PHB
 
-*/
-
-/*
 Learning in this assignment:
 	- structs and receiver functions for structs.
 	- slices, maps.
@@ -46,17 +41,14 @@ Learning in this assignment:
 	- Multiple return values
 	- First-order functions.
 	- Cookies
-
 */
 
+// userData holds all the user information with a uuid association.
 var userData *lib.UserData
+// dataMutex is used to lock the shared userData struct.
 var dataMutex *sync.Mutex
 
-//BUG URLs that are prefixed with '/time/' are still recognized as valid.
-//For instance, '/time/notvalid' still returns the time and 200.
-
-// Main method for the timeserver. Since this assignment is so small,
-// all the setup and breakdown happens within this one function.
+// Main method for the timeserver.
 func main() {
 	// setup and parse the arguments.
 	var port *int = flag.Int("port", DEFAULT_PORT, "port to launch webserver on, default is 8080")
@@ -68,19 +60,20 @@ func main() {
 		os.Exit(0)
 	}
 
-	// setup and start the webserver.
-	var portString string = fmt.Sprintf(":%d", *port)
-
+	// Initialize global data.
 	userData = lib.NewUserData()
 	dataMutex = new(sync.Mutex)
 
-	// View Handler
-	vh := lib.NewStrictHandler()
+	// setup and start the webserver.
+	var portString string = fmt.Sprintf(":%d", *port)
 
+	// View Handler and patterns
+	vh := lib.NewStrictHandler()
+	vh.NotFoundHandler = notFoundHandler
 	vh.HandlePatterns([]string{"/", "/index.html"}, indexHandler)
+	vh.HandlePattern("/time/", timeHandler)
 	vh.HandlePattern("/login/", loginHandler)
 	vh.HandlePattern("/logout/", logoutHandler)
-	vh.HandlePattern("/time/", timeHandler)
 
 	server := http.Server{
 		Addr:    portString,
@@ -97,6 +90,10 @@ func main() {
 	fmt.Println("Timeserver exiting..")
 }
 
+/* 
+getUsername retrieves the cookie from the request. It then uses the uuid
+to retrieve the username from the UserData struct, returning the value.
+*/
 func getUsername(req *http.Request) (username string, err error) {
 	if cookie, err := req.Cookie(COOKIE_NAME); err == nil {
 		uuid := lib.Uuid(cookie.Value)
@@ -107,6 +104,7 @@ func getUsername(req *http.Request) (username string, err error) {
 	return "", errors.New("No valid user uuid was found with an associated name")
 }
 
+// indexHandler is the view for the index resource.
 func indexHandler(resStream http.ResponseWriter, req *http.Request) {
 	username, err := getUsername(req)
 	if err == nil {
@@ -121,15 +119,22 @@ func indexHandler(resStream http.ResponseWriter, req *http.Request) {
 	logRequest(req, http.StatusOK)
 }
 
+/*
+login create a new uuid -> username association using the UserData struct.
+A cookie is then created to store the uuid.
+*/ 
 func login(res http.ResponseWriter, username string) error {
-	// create a cookie
-	//TODO(assign2): error handling for hash collision?
+	// TODO: error handling for hash collision?
 
 	dataMutex.Lock()
 	fmt.Fprintln(os.Stderr, "login(): Mutex Lock")
+
 	uuid, _ := userData.AddUser(username)
+
 	dataMutex.Unlock()
 	fmt.Fprintln(os.Stderr, "login(): Mutex Unlock")
+
+	// create a cookie
 	cookie := http.Cookie{
 		Name:   COOKIE_NAME,
 		Path:   "/",
@@ -140,6 +145,7 @@ func login(res http.ResponseWriter, username string) error {
 	return nil
 }
 
+// loginHandler is the view for the login resource.
 func loginHandler(res http.ResponseWriter, req *http.Request) {
 	// get the requested username
 	username := req.FormValue("name")
@@ -153,7 +159,13 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 	logRequest(req, http.StatusFound)
 }
 
-//TODO (assign2) add error handling?
+/*
+logout contains the logic for removing a uuid -> user association (via UserData)
+struct and sets the cookie for removal.
+
+BUG: the cookie is not deleted by the client. logout is still effective though.
+TODO: add error handling?
+*/
 func logout(res http.ResponseWriter, req *http.Request) {
 	cookie, _ := req.Cookie(COOKIE_NAME)
 
@@ -168,6 +180,7 @@ func logout(res http.ResponseWriter, req *http.Request) {
 	http.SetCookie(res, cookie)
 }
 
+// logoutHandler is the view for the logout resource.
 func logoutHandler(res http.ResponseWriter, req *http.Request) {
 	logout(res, req)
 	io.WriteString(res, logoutHtml.GetHtml())
@@ -175,7 +188,9 @@ func logoutHandler(res http.ResponseWriter, req *http.Request) {
 	logRequest(req, http.StatusFound)
 }
 
+// timeHandler is the view for the time resource.
 func timeHandler(resStream http.ResponseWriter, req *http.Request) {
+	// replace empty string with the username text if logged in.
 	usernameInsert := ""
 	if username, err := getUsername(req); err == nil {
 		usernameInsert = ", " + username
@@ -188,6 +203,7 @@ func timeHandler(resStream http.ResponseWriter, req *http.Request) {
 	logRequest(req, http.StatusOK)
 }
 
+// notFoundHandler is the view for the global 404 resource.
 func notFoundHandler(resStream http.ResponseWriter, req *http.Request) {
 	resStream.WriteHeader(http.StatusNotFound)
 	io.WriteString(resStream, notFoundHtml.GetHtml())
@@ -214,16 +230,20 @@ func logRequest(req *http.Request, statusCode int) {
 	fmt.Println("")
 }
 
+/*
+HtmlData is a simple struct for holding simple template info.
+*/
 type HtmlData struct {
 	head string
 	body string
 }
 
+// GetHtml renders the head and body of an HtmlData into the BASE_HTML template.
 func (hd *HtmlData) GetHtml() string {
 	return fmt.Sprintf(BASE_HTML, hd.head, hd.body)
 }
 
-const COOKIE_NAME = "assign2"
+const COOKIE_NAME = "timeserver_assignment2_tompetit"
 const TIME_LAYOUT = "3:04:05 PM"
 const DEFAULT_PORT = 8080
 
