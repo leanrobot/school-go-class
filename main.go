@@ -7,6 +7,7 @@ Winter 2015, CSS 490 - Tactical Software Engineering
 // The timeserver package contains a simple time server created for assignment one.
 package main
 
+
 import (
 	"bitbucket.org/thopet/assign2/lib"
 	"errors"
@@ -20,20 +21,19 @@ import (
 	"sync"
 )
 
+const VERSION = "assignment-02.rc01"
+
+
 /*
 TODO:
 	- Refactor main.go into modules.
-	- dont allow a login if there is already a valid one.
-	- add a trailing / removal for StrictHandler
-	- add handler for view
-		- /login/?name=...
-			- MAIN PAGE DONE
-			- no name param? say "C'mon, I need a name."
-		- /logout/
-			- BUG(assign2): client does not delete cookie (for some reason)
-				- Still is invalidated (so good).
-	- add a mutex for the userData struct.
+	- BUG: login can happen during an existing login
+		causing an orphaned UUID in the data.
+	- /logout/
+		- BUG(assign2): client does not delete cookie (for some reason)
+			- Still is invalidated (so good).
 	- TODO(assign2): error handling for hash collision?
+	- Fork request from PHB
 
 */
 
@@ -64,7 +64,7 @@ func main() {
 	flag.Parse()
 
 	if *versionPrint {
-		fmt.Println(VERSION_INFO)
+		fmt.Println(VERSION)
 		os.Exit(0)
 	}
 
@@ -108,12 +108,6 @@ func getUsername(req *http.Request) (username string, err error) {
 }
 
 func indexHandler(resStream http.ResponseWriter, req *http.Request) {
-	// Extra handling is required to add 404 pages.
-	if url := req.URL.Path; url != "/" && url != "/index.html" {
-		notFoundHandler(resStream, req)
-		return
-	}
-
 	username, err := getUsername(req)
 	if err == nil {
 		// a username was found, greet them.
@@ -130,6 +124,7 @@ func indexHandler(resStream http.ResponseWriter, req *http.Request) {
 func login(res http.ResponseWriter, username string) error {
 	// create a cookie
 	//TODO(assign2): error handling for hash collision?
+
 	dataMutex.Lock()
 	fmt.Fprintln(os.Stderr, "login(): Mutex Lock")
 	uuid, _ := userData.AddUser(username)
@@ -143,17 +138,18 @@ func login(res http.ResponseWriter, username string) error {
 	}
 	http.SetCookie(res, &cookie)
 	return nil
-	//return "", errors.New("No valid user uuid was found with an associated name")
 }
 
 func loginHandler(res http.ResponseWriter, req *http.Request) {
-	if req.Method == "POST" {
-		// get the requested username
-		username := req.FormValue("name")
+	// get the requested username
+	username := req.FormValue("name")
+	if len(username) < 1 {
+		io.WriteString(res, loginHtmlError.GetHtml())
+	} else {
 		login(res, username)
+		http.Redirect(res, req, "/index.html", http.StatusFound)
 	}
-	http.Redirect(res, req, "/index.html", http.StatusFound)
-
+	
 	logRequest(req, http.StatusFound)
 }
 
@@ -231,13 +227,6 @@ const COOKIE_NAME = "assign2"
 const TIME_LAYOUT = "3:04:05 PM"
 const DEFAULT_PORT = 8080
 
-const VERSION_INFO = `
-Simple Time Server. Written by Tom Petit.
-Winter 2015, CSS 490 - Tactical Software Engineering
-
-version: 1.9rc
-`
-
 const BASE_HTML = `
 <html>
 <head>%s</head>
@@ -271,6 +260,10 @@ var (
 				</form>
 			</p>
 		`,
+	}
+
+	loginHtmlError = HtmlData{
+		body: `<p>C'mon, I need a name.</p>`,
 	}
 
 	indexHtml = HtmlData{
