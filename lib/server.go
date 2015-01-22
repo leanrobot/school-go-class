@@ -1,9 +1,9 @@
 package lib
 
 import (
+	"fmt"
 	"net/http"
 	"os"
-	"fmt"
 )
 
 // simple type to alias the viewHandler interface in net/http.
@@ -60,7 +60,7 @@ func (sh *StrictHandler) HandlePattern(pattern string, handler ViewHandler) {
 }
 
 /*
-ServeHTTP conforms to the http.Handler interface type. 
+ServeHTTP conforms to the http.Handler interface type.
 
 Given a request it determines which view to call for that url resource.
 Url patterns are stored in a list to maintain the register-first match-first
@@ -99,7 +99,7 @@ func removeTrailingSlashes(patterns []string) {
 func removeTrailingSlash(pattern string) string {
 	if string(pattern[len(pattern)-1]) == "/" {
 		fmt.Fprintln(os.Stderr, "trailingSlash removed from", pattern)
-		return pattern[0:len(pattern)-1]
+		return pattern[0 : len(pattern)-1]
 	}
 	return pattern
 }

@@ -7,7 +7,6 @@ Winter 2015, CSS 490 - Tactical Software Engineering
 // The timeserver package contains a simple time server created for assignment one.
 package main
 
-
 import (
 	"bitbucket.org/thopet/timeserver/lib"
 	"errors"
@@ -17,8 +16,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 	"sync"
+	"time"
 )
 
 const VERSION = "assignment-02.rc02"
@@ -45,6 +44,7 @@ Learning in this assignment:
 
 // userData holds all the user information with a uuid association.
 var userData *lib.UserData
+
 // dataMutex is used to lock the shared userData struct.
 var dataMutex *sync.Mutex
 
@@ -90,7 +90,7 @@ func main() {
 	fmt.Println("Timeserver exiting..")
 }
 
-/* 
+/*
 getUsername retrieves the cookie from the request. It then uses the uuid
 to retrieve the username from the UserData struct, returning the value.
 */
@@ -122,7 +122,7 @@ func indexHandler(resStream http.ResponseWriter, req *http.Request) {
 /*
 login create a new uuid -> username association using the UserData struct.
 A cookie is then created to store the uuid.
-*/ 
+*/
 func login(res http.ResponseWriter, username string) error {
 	// TODO: error handling for hash collision?
 
@@ -155,7 +155,7 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 		login(res, username)
 		http.Redirect(res, req, "/index.html", http.StatusFound)
 	}
-	
+
 	logRequest(req, http.StatusFound)
 }
 
