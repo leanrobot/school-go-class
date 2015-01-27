@@ -2,6 +2,18 @@
 Current time
 {{end}}
 
+{{define "head"}}
+<!--
+<style>
+	p { font-size: xx-large }
+	span.time { color : red }
+</style>
+-->
+{{end}}
+
 {{define "body"}}
-<p>Hello world! Who cares what the time ({{.Time}})) is? It's grooovy</p>
+<p>
+	The time is now <span class="time">{{.Time}}</span>
+	, {{.Username}}.
+</p>
 {{end}}

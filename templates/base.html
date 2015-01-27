@@ -3,21 +3,18 @@
   <head>
     <link rel="stylesheet" type="text/css" href="/css/style.css" />
     <title>{{template "title" .}}</title>
+    {{template "head" .}}
   </head>
   <body>
     <div class="logo">
       &nbsp;
     </div>
     <hr class="logo" />
-    <div class="menu"><p>
-        Home | Time | Logout | About Us
-    </p></div>
+    {{template "menu"}}
 
     {{template "body" .}}
 
-    <div class="menu"><p>
-        Home | Time | Logout | About Us
-    </p></div>
+    {{template "menu"}}
   </body>
 </html>
 {{end}}

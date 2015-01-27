@@ -18,19 +18,11 @@ func init() {
     for key, _ := range templates {
         templates[key] = template.Must(template.ParseFiles(
             "templates/base.html",
+            "templates/menu.html",
             key,
         ))
         fmt.Println("render", key)
     }
-}
-
-func viewHandler(w http.ResponseWriter, r *http.Request) {
-    // funcMap := template.FuncMap{
-    //     "safehtml": func(text string) template.HTML { return template.HTML(text) },
-    // }
-    
-
-    
 }
 
 func renderBaseTemplate(res http.ResponseWriter, templateLoc string, data interface{}) {
@@ -57,8 +49,10 @@ func main() {
     http.HandleFunc("/time/", func(res http.ResponseWriter, req *http.Request) {
         data := struct {
             Time string
+            Username string
         }{
             Time: "12332434:3333",
+            Username: "TestUser",
         }
         fmt.Println("render /time/")
         renderBaseTemplate(res, "templates/time.html", data)
