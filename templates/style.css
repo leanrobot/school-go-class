@@ -1,0 +1,288 @@
+/*
+// Copyright 2013-2015 Systems Deployment, LLC
+// Author: Morris Bernstein (morris@systems-deployment.com)
+*/
+
+* {
+    font-family: "Arial";
+}
+
+body {
+    font-family: "Arial";
+    width: 10in;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+code {
+    /* background-color: #daa520; */
+    font-family: "monospace";
+    font-weight: bold;
+}
+
+code.hilite {
+    /* background-color: #daa520; */
+    font-family: "monospace";
+    font-weight: bold;
+    background-color: #ffff00;
+}
+
+pre {
+    margin-left: 4em;
+    font-family: "monospace";
+}
+
+pre.code {
+    font-family: "monospace";
+    font-weight: bold;
+}
+
+p.bold {
+    font-weight: bold;
+}
+
+p.with_list {
+    margin-bottom: 0;
+}
+
+li:first-child {
+    margin-top: 5px;
+}
+
+p.indent {
+    margin-top: 0;
+    margin-left: 3em;
+}
+
+ol {
+    margin-top: 3pt;
+}
+
+ul.in_paragraph {
+    margin-top: 3pt;
+}
+
+ul {
+}
+
+li {
+    margin-bottom: 3pt;
+}
+
+img.centered {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/*
+table.logo {
+    width: 100%;x
+    background-color: #ffcc66;
+    border: 0;
+    cellspacing: 0;
+    cellpadding: 0;
+}
+*/
+
+div.logo {
+    align: left
+    width: 100%;
+    background-color: #ffcc66;
+    padding: 0;
+    margin: 0;
+}
+
+img.logo {
+    border: 0;
+    width: 250;
+    heigth: 100;
+}
+
+hr.logo {
+    color: #000099;
+    background-color: #000099;
+    height: 20px;
+    padding: 0;
+    margin: 0;
+}
+
+table.assignments {
+/*
+    border:4px solid black;
+    background-color:#00ffff;
+    padding: 1em;
+*/
+}
+
+table.assignments tr.subtotal th
+{
+    border-top: 1px solid black;
+    padding-right: 1em;
+}
+
+table.assignments tr.subtotal td
+{
+    border-top: 1px solid black;
+    padding-left: 1em;
+    text-align: right;
+}
+
+table.assignments tr.total th
+{
+    border-top: 2px solid black;
+    padding-right: 1em;
+}
+
+table.assignments tr.total td
+{
+    border-top: 2px solid black;
+    padding-left: 1em;
+    text-align: right;
+}
+
+table.assignments td.value {
+    padding-left: 1em;
+    text-align: right;
+}
+
+table.schedule {
+
+}
+
+table.schedule tr th {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+table.schedule tr td {
+    padding-top: 1em;
+    padding-bottom: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+ul.schedule {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+ul.schedule li {
+    /*
+      background-color: #808080;
+    */
+}
+
+.hilite {
+    font-weight: bold;
+    background-color: #ffff00;
+}
+
+
+div.codebox {
+    border-style: dashed;
+    border-width: 3px;
+    border-color: green;
+}
+
+div.codeexample {
+    margin-left: 3em;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+div.imagebox {
+    text-align: center;
+    border-style: dashed;
+    border-width: 3px;
+    border-color: green;
+}
+
+img.flowgraph {
+    /* width: 90%; */
+}
+
+img.flowgraph_scaled {
+    width: 90%;
+}
+
+
+span.ok {
+    color: green;
+}
+
+span.maybe {
+    color: yellow;
+    background-color: #444444;
+}
+
+span.notok {
+    color: red;
+}
+
+span.reallybad {
+    background-color: red;
+}
+
+span.prompt {
+    color: red;
+}
+
+span.command {
+    color: blue;
+}
+
+span.ellipsis {
+    color: blue;
+}
+
+span.user {
+    color: blue;
+}
+
+span.commentary {
+    color: red;
+}
+
+table.bitops td {
+    padding: 1em;
+}
+
+table.bitops th {
+    padding: 1em;
+}
+
+table.radix th {
+    padding: 1em;
+}
+
+table.radix td {
+    padding: 1em;
+}
+
+div.menu {
+    font-size: small;
+}
+
+ul.footnote_list {
+    padding-left: 0;
+    margin-left: 0;
+    list-style-type: none;
+    font-size: small;
+}
+
+li.footnote {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+a.footnote_link {
+    text-decoration: none;
+}
+
+p.time {
+    font-size = xx-large
+}
+span.time {
+    color: red
+}

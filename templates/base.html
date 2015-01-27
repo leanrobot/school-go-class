@@ -1,0 +1,23 @@
+{{define "base"}}
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/css/style.css" />
+    <title>{{template "title" .}}</title>
+  </head>
+  <body>
+    <div class="logo">
+      &nbsp;
+    </div>
+    <hr class="logo" />
+    <div class="menu"><p>
+        Home | Time | Logout | About Us
+    </p></div>
+
+    {{template "body" .}}
+
+    <div class="menu"><p>
+        Home | Time | Logout | About Us
+    </p></div>
+  </body>
+</html>
+{{end}}
