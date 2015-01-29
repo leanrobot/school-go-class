@@ -12,12 +12,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"sync"
 	"time"
+	"html/template"
 )
 
 const VERSION = "assignment-02.rc02"
@@ -31,22 +31,24 @@ TODO:
 		- BUG(assign2): client does not delete cookie (for some reason)
 			- Still is invalidated (so good).
 	- TODO(assign2): error handling for hash collision?
-
-Learning in this assignment:
-	- structs and receiver functions for structs.
-	- slices, maps.
-	- Custom server handlers
-	- Error handling in go.
-	- Multiple return values
-	- First-order functions.
-	- Cookies
 */
+
+// TODO read this as a flag.
+var templatesDir = "src/bitbucket.org/thopet/timeserver/templates/"
 
 // userData holds all the user information with a uuid association.
 var userData *lib.UserData
 
 // dataMutex is used to lock the shared userData struct.
 var dataMutex *sync.Mutex
+
+var templates = map[string]*template.Template {
+	    "index.html": nil,
+	    "time.html": nil,
+	    "login.html": nil,
+	    "login_error.html": nil,
+	    "logout.html": nil,
+	}
 
 // Main method for the timeserver.
 func main() {
@@ -67,6 +69,8 @@ func main() {
 	// setup and start the webserver.
 	var portString string = fmt.Sprintf(":%d", *port)
 
+	initTemplates()
+
 	// View Handler and patterns
 	vh := lib.NewStrictHandler()
 	vh.NotFoundHandler = notFoundHandler
@@ -74,6 +78,7 @@ func main() {
 	vh.HandlePattern("/time/", timeHandler)
 	vh.HandlePattern("/login/", loginHandler)
 	vh.HandlePattern("/logout/", logoutHandler)
+	vh.ServeStaticFile("/css/style.css", getTemplateFilepath("style.css"))
 
 	server := http.Server{
 		Addr:    portString,
@@ -88,6 +93,21 @@ func main() {
 	}
 
 	fmt.Println("Timeserver exiting..")
+}
+
+func initTemplates() {
+    for key, _ := range templates {
+        templates[key] = template.Must(template.ParseFiles(
+            getTemplateFilepath("base.html"),
+            getTemplateFilepath("menu.html"),
+            getTemplateFilepath(key),
+        ))
+        fmt.Println("render", key)
+    }
+}
+
+func getTemplateFilepath(filename string) string {
+	return templatesDir+filename
 }
 
 /*
@@ -105,15 +125,19 @@ func getUsername(req *http.Request) (username string, err error) {
 }
 
 // indexHandler is the view for the index resource.
-func indexHandler(resStream http.ResponseWriter, req *http.Request) {
+func indexHandler(res http.ResponseWriter, req *http.Request) {
 	username, err := getUsername(req)
 	if err == nil {
+		data := struct {
+			Username string
+		}{
+			Username: username,
+		}
 		// a username was found, greet them.
-		insertUsernameHtml := fmt.Sprintf(indexHtml.GetHtml(), username)
-		io.WriteString(resStream, insertUsernameHtml)
+		renderBaseTemplate(res, "index.html", data)
+
 	} else {
-		// no username was found, display the login page.
-		io.WriteString(resStream, loginHtml.GetHtml())
+		renderBaseTemplate(res, "login.html", struct{}{})
 	}
 
 	logRequest(req, http.StatusOK)
@@ -150,7 +174,7 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 	// get the requested username
 	username := req.FormValue("name")
 	if len(username) < 1 {
-		io.WriteString(res, loginHtmlError.GetHtml())
+		renderBaseTemplate(res, "login_error.html", nil)
 	} else {
 		login(res, username)
 		http.Redirect(res, req, "/index.html", http.StatusFound)
@@ -183,30 +207,45 @@ func logout(res http.ResponseWriter, req *http.Request) {
 // logoutHandler is the view for the logout resource.
 func logoutHandler(res http.ResponseWriter, req *http.Request) {
 	logout(res, req)
-	io.WriteString(res, logoutHtml.GetHtml())
+	renderBaseTemplate(res, "logout.html", struct{}{})
 
 	logRequest(req, http.StatusFound)
 }
 
+func renderBaseTemplate(res http.ResponseWriter, templateName string, data interface{}) {
+    tmpl, ok := templates[templateName]
+    if ok {
+        fmt.Println("ok!")
+    }
+
+    err := tmpl.ExecuteTemplate(res, "base", data)
+    if err != nil {
+        http.Error(res, err.Error(), http.StatusInternalServerError)
+    }
+}
+
 // timeHandler is the view for the time resource.
-func timeHandler(resStream http.ResponseWriter, req *http.Request) {
+func timeHandler(res http.ResponseWriter, req *http.Request) {
 	// replace empty string with the username text if logged in.
-	usernameInsert := ""
+	data := struct {
+        Time string
+        Username string
+    }{}
+
 	if username, err := getUsername(req); err == nil {
-		usernameInsert = ", " + username
+		data.Username = username
 	}
 
-	var curTime string = time.Now().Local().Format(TIME_LAYOUT)
-	io.WriteString(resStream, fmt.Sprintf(timeHtml.GetHtml(),
-		curTime, usernameInsert))
+	data.Time = time.Now().Local().Format(TIME_LAYOUT)
+    renderBaseTemplate(res, "time.html", data)
 
 	logRequest(req, http.StatusOK)
 }
 
 // notFoundHandler is the view for the global 404 resource.
-func notFoundHandler(resStream http.ResponseWriter, req *http.Request) {
-	resStream.WriteHeader(http.StatusNotFound)
-	io.WriteString(resStream, notFoundHtml.GetHtml())
+func notFoundHandler(res http.ResponseWriter, req *http.Request) {
+	res.WriteHeader(http.StatusNotFound)
+	renderBaseTemplate(res, "404.html", nil)
 
 	logRequest(req, http.StatusNotFound)
 }
@@ -230,28 +269,7 @@ func logRequest(req *http.Request, statusCode int) {
 	fmt.Println("")
 }
 
-/*
-HtmlData is a simple struct for holding simple template info.
-*/
-type HtmlData struct {
-	head string
-	body string
-}
-
-// GetHtml renders the head and body of an HtmlData into the BASE_HTML template.
-func (hd *HtmlData) GetHtml() string {
-	return fmt.Sprintf(BASE_HTML, hd.head, hd.body)
-}
-
 const COOKIE_NAME = "timeserver_assignment2_tompetit"
 const TIME_LAYOUT = "3:04:05 PM"
 const DEFAULT_PORT = 8080
 
-const BASE_HTML = `
-<html>
-<head>%s</head>
-<body>%s</body>
-</html>
-`
-
-type HandlerFunc func(http.ResponseWriter, *http.Request)

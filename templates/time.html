@@ -1,19 +1,10 @@
-{{define "title"}}
-Current time
-{{end}}
-
-{{define "head"}}
-<!--
-<style>
-	p { font-size: xx-large }
-	span.time { color : red }
-</style>
--->
-{{end}}
+{{define "title"}}Current time{{end}}
 
 {{define "body"}}
 <p>
 	The time is now <span class="time">{{.Time}}</span>
-	, {{.Username}}.
+	{{if .Username}}
+		, {{.Username}}.
+	{{end}}
 </p>
 {{end}}

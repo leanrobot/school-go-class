@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"io/ioutil"
 )
+
+var BASE_TEMPLATE = "templates/base.html"
 
 // simple type to alias the viewHandler interface in net/http.
 type ViewHandler func(http.ResponseWriter, *http.Request)
@@ -49,6 +52,8 @@ func (sh *StrictHandler) HandlePatterns(patterns []string, handler ViewHandler) 
 		Handler:  handler,
 	}
 	sh.Views = append(sh.Views, view)
+	fmt.Fprintf(os.Stderr, "%v registered\n", patterns)
+
 }
 
 /*
@@ -57,6 +62,18 @@ documentation for HandlePatterns for more information.
 */
 func (sh *StrictHandler) HandlePattern(pattern string, handler ViewHandler) {
 	sh.HandlePatterns([]string{pattern}, handler)
+}
+
+func (sh *StrictHandler) ServeStaticFile(pattern string, filename string) {
+	sh.HandlePattern(pattern, 
+		func(res http.ResponseWriter, req *http.Request) {
+	        buf, err := ioutil.ReadFile(filename)
+	        if err != nil {
+	        	sh.NotFoundHandler(res, req)
+	        } else {
+		        res.Write(buf)
+	        }
+	    })
 }
 
 /*
