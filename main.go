@@ -21,7 +21,10 @@ import (
 
 const (
 	VERSION      = "assignment-02.rc02"
+
 	TIME_LAYOUT  = "3:04:05 PM"
+	MILITARY_TIME_LAYOUT = "15:04:05"
+
 	DEFAULT_PORT = 8080
 )
 
@@ -150,6 +153,7 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 	// replace empty string with the username text if logged in.
 	data := struct {
 		Time     string
+		MilitaryTime string
 		Username string
 	}{}
 
@@ -158,6 +162,7 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	data.Time = time.Now().Local().Format(TIME_LAYOUT)
+	data.MilitaryTime = time.Now().UTC().Format(MILITARY_TIME_LAYOUT)
 	renderBaseTemplate(res, "time.html", data)
 
 	logRequest(req, http.StatusOK)

@@ -3,6 +3,6 @@
 {{define "body"}}
 <p>
 	The time is now 
-	<span class="time">{{.Time}}</span>{{if .Username}}, {{.Username}}.{{end}}
+	<span class="time">{{.Time}}</span> ({{.MilitaryTime}} UTC){{if .Username}}, {{.Username}}.{{end}}
 </p>
 {{end}}
