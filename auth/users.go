@@ -1,10 +1,11 @@
-package lib
+package auth
 
 import (
 	"crypto/md5"
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 	"time"
 )
 
@@ -14,11 +15,14 @@ type UserData struct {
 	// key is a unique md5 hash generated for the user.
 	// value is the user's name.
 	names map[Uuid]string
+	lock  *sync.Mutex
 }
 
 func NewUserData() *UserData {
-	var newMap = make(map[Uuid]string)
-	newUserData := UserData{names: newMap}
+	newUserData := UserData{
+		names: make(map[Uuid]string),
+		lock:  new(sync.Mutex),
+	}
 	return &newUserData
 }
 
@@ -35,6 +39,10 @@ func (ud *UserData) AddUser(name string) (id Uuid, err error) {
 	io.WriteString(idHash, time.Now().Format(time.UnixDate))
 
 	id = Uuid(fmt.Sprintf("%x", idHash.Sum(nil)))
+
+	ud.lock.Lock()
+	defer ud.lock.Unlock()
+
 	if _, exists := ud.names[id]; !exists {
 		// no uuid collision in the map, create the user and return their id.
 		ud.names[id] = name
@@ -48,8 +56,7 @@ The GetUser function retrieves a username based on their uuid.
 If the user does not exist, an error is returned.
 */
 func (ud *UserData) GetUser(id Uuid) (name string, err error) {
-	name, exists := ud.names[id]
-	if exists {
+	if name, exists := ud.names[id]; exists {
 		return name, nil
 	} else {
 		return "", errors.New("User with id does not exist")
@@ -57,6 +64,9 @@ func (ud *UserData) GetUser(id Uuid) (name string, err error) {
 }
 
 func (ud *UserData) RemoveUser(id Uuid) error {
+	ud.lock.Lock()
+	defer ud.lock.Unlock()
+
 	if _, exists := ud.names[id]; exists {
 		delete(ud.names, id)
 		return nil

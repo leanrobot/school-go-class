@@ -8,19 +8,22 @@ Winter 2015, CSS 490 - Tactical Software Engineering
 package main
 
 import (
-	"bitbucket.org/thopet/timeserver/lib"
-	"errors"
+	"bitbucket.org/thopet/timeserver/auth"
+	"bitbucket.org/thopet/timeserver/server"
 	"flag"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"sync"
 	"time"
-	"html/template"
 )
 
-const VERSION = "assignment-02.rc02"
+const (
+	VERSION      = "assignment-02.rc02"
+	TIME_LAYOUT  = "3:04:05 PM"
+	DEFAULT_PORT = 8080
+)
 
 /*
 TODO:
@@ -37,18 +40,15 @@ TODO:
 var templatesDir = "src/bitbucket.org/thopet/timeserver/templates/"
 
 // userData holds all the user information with a uuid association.
-var userData *lib.UserData
+var userData *auth.CookieAuth
 
-// dataMutex is used to lock the shared userData struct.
-var dataMutex *sync.Mutex
-
-var templates = map[string]*template.Template {
-	    "index.html": nil,
-	    "time.html": nil,
-	    "login.html": nil,
-	    "login_error.html": nil,
-	    "logout.html": nil,
-	}
+var templates = map[string]*template.Template{
+	"index.html":       nil,
+	"time.html":        nil,
+	"login.html":       nil,
+	"login_error.html": nil,
+	"logout.html":      nil,
+}
 
 // Main method for the timeserver.
 func main() {
@@ -63,8 +63,7 @@ func main() {
 	}
 
 	// Initialize global data.
-	userData = lib.NewUserData()
-	dataMutex = new(sync.Mutex)
+	userData = auth.NewCookieAuth()
 
 	// setup and start the webserver.
 	var portString string = fmt.Sprintf(":%d", *port)
@@ -72,7 +71,7 @@ func main() {
 	initTemplates()
 
 	// View Handler and patterns
-	vh := lib.NewStrictHandler()
+	vh := server.NewStrictHandler()
 	vh.NotFoundHandler = notFoundHandler
 	vh.HandlePatterns([]string{"/", "/index.html"}, indexHandler)
 	vh.HandlePattern("/time/", timeHandler)
@@ -96,77 +95,32 @@ func main() {
 }
 
 func initTemplates() {
-    for key, _ := range templates {
-        templates[key] = template.Must(template.ParseFiles(
-            getTemplateFilepath("base.html"),
-            getTemplateFilepath("menu.html"),
-            getTemplateFilepath(key),
-        ))
-        fmt.Println("render", key)
-    }
+	for key, _ := range templates {
+		templates[key] = template.Must(template.ParseFiles(
+			getTemplateFilepath("base.html"),
+			getTemplateFilepath("menu.html"),
+			getTemplateFilepath(key),
+		))
+		fmt.Println("render", key)
+	}
 }
 
 func getTemplateFilepath(filename string) string {
-	return templatesDir+filename
-}
-
-/*
-getUsername retrieves the cookie from the request. It then uses the uuid
-to retrieve the username from the UserData struct, returning the value.
-*/
-func getUsername(req *http.Request) (username string, err error) {
-	if cookie, err := req.Cookie(COOKIE_NAME); err == nil {
-		uuid := lib.Uuid(cookie.Value)
-		if username, err := userData.GetUser(uuid); err == nil {
-			return username, nil
-		}
-	}
-	return "", errors.New("No valid user uuid was found with an associated name")
+	return templatesDir + filename
 }
 
 // indexHandler is the view for the index resource.
 func indexHandler(res http.ResponseWriter, req *http.Request) {
-	username, err := getUsername(req)
+	username, err := userData.GetUsername(req)
 	if err == nil {
-		data := struct {
-			Username string
-		}{
-			Username: username,
-		}
+		data := struct{ Username string }{Username: username}
 		// a username was found, greet them.
 		renderBaseTemplate(res, "index.html", data)
-
 	} else {
-		renderBaseTemplate(res, "login.html", struct{}{})
+		renderBaseTemplate(res, "login.html", nil)
 	}
 
 	logRequest(req, http.StatusOK)
-}
-
-/*
-login create a new uuid -> username association using the UserData struct.
-A cookie is then created to store the uuid.
-*/
-func login(res http.ResponseWriter, username string) error {
-	// TODO: error handling for hash collision?
-
-	dataMutex.Lock()
-	fmt.Fprintln(os.Stderr, "login(): Mutex Lock")
-
-	uuid, _ := userData.AddUser(username)
-
-	dataMutex.Unlock()
-	fmt.Fprintln(os.Stderr, "login(): Mutex Unlock")
-
-	// create a cookie
-	cookie := http.Cookie{
-		Name:   COOKIE_NAME,
-		Path:   "/",
-		Value:  string(uuid),
-		MaxAge: 604800, // 7 days
-	}
-	http.SetCookie(res, &cookie)
-	return nil
 }
 
 // loginHandler is the view for the login resource.
@@ -176,68 +130,35 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 	if len(username) < 1 {
 		renderBaseTemplate(res, "login_error.html", nil)
 	} else {
-		login(res, username)
+		userData.Login(res, username)
 		http.Redirect(res, req, "/index.html", http.StatusFound)
 	}
 
 	logRequest(req, http.StatusFound)
 }
 
-/*
-logout contains the logic for removing a uuid -> user association (via UserData)
-struct and sets the cookie for removal.
-
-BUG: the cookie is not deleted by the client. logout is still effective though.
-TODO: add error handling?
-*/
-func logout(res http.ResponseWriter, req *http.Request) {
-	cookie, _ := req.Cookie(COOKIE_NAME)
-
-	fmt.Fprintln(os.Stderr, "logout(): Mutex Lock")
-	dataMutex.Lock()
-	userData.RemoveUser(lib.Uuid(cookie.Value))
-	dataMutex.Unlock()
-	fmt.Fprintln(os.Stderr, "logout(): Mutex Unlock")
-
-	cookie.MaxAge = -1
-	cookie.Value = "LOGGED_OUT_CLEAR_DATA"
-	http.SetCookie(res, cookie)
-}
-
 // logoutHandler is the view for the logout resource.
 func logoutHandler(res http.ResponseWriter, req *http.Request) {
-	logout(res, req)
-	renderBaseTemplate(res, "logout.html", struct{}{})
+	userData.Logout(res, req)
+	renderBaseTemplate(res, "logout.html", nil)
 
 	logRequest(req, http.StatusFound)
-}
-
-func renderBaseTemplate(res http.ResponseWriter, templateName string, data interface{}) {
-    tmpl, ok := templates[templateName]
-    if ok {
-        fmt.Println("ok!")
-    }
-
-    err := tmpl.ExecuteTemplate(res, "base", data)
-    if err != nil {
-        http.Error(res, err.Error(), http.StatusInternalServerError)
-    }
 }
 
 // timeHandler is the view for the time resource.
 func timeHandler(res http.ResponseWriter, req *http.Request) {
 	// replace empty string with the username text if logged in.
 	data := struct {
-        Time string
-        Username string
-    }{}
+		Time     string
+		Username string
+	}{}
 
-	if username, err := getUsername(req); err == nil {
+	if username, err := userData.GetUsername(req); err == nil {
 		data.Username = username
 	}
 
 	data.Time = time.Now().Local().Format(TIME_LAYOUT)
-    renderBaseTemplate(res, "time.html", data)
+	renderBaseTemplate(res, "time.html", data)
 
 	logRequest(req, http.StatusOK)
 }
@@ -248,6 +169,18 @@ func notFoundHandler(res http.ResponseWriter, req *http.Request) {
 	renderBaseTemplate(res, "404.html", nil)
 
 	logRequest(req, http.StatusNotFound)
+}
+
+func renderBaseTemplate(res http.ResponseWriter, templateName string, data interface{}) {
+	tmpl, ok := templates[templateName]
+	if ok {
+		fmt.Println("ok!")
+	}
+
+	err := tmpl.ExecuteTemplate(res, "base", data)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // logRequest logs request data to stdout. The format conforms closely to
@@ -268,8 +201,3 @@ func logRequest(req *http.Request, statusCode int) {
 		statusCode)
 	fmt.Println("")
 }
-
-const COOKIE_NAME = "timeserver_assignment2_tompetit"
-const TIME_LAYOUT = "3:04:05 PM"
-const DEFAULT_PORT = 8080
-

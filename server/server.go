@@ -1,10 +1,10 @@
-package lib
+package server
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
-	"io/ioutil"
 )
 
 var BASE_TEMPLATE = "templates/base.html"
@@ -65,15 +65,15 @@ func (sh *StrictHandler) HandlePattern(pattern string, handler ViewHandler) {
 }
 
 func (sh *StrictHandler) ServeStaticFile(pattern string, filename string) {
-	sh.HandlePattern(pattern, 
+	sh.HandlePattern(pattern,
 		func(res http.ResponseWriter, req *http.Request) {
-	        buf, err := ioutil.ReadFile(filename)
-	        if err != nil {
-	        	sh.NotFoundHandler(res, req)
-	        } else {
-		        res.Write(buf)
-	        }
-	    })
+			buf, err := ioutil.ReadFile(filename)
+			if err != nil {
+				sh.NotFoundHandler(res, req)
+			} else {
+				res.Write(buf)
+			}
+		})
 }
 
 /*
