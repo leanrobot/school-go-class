@@ -1,16 +1,16 @@
 package server
 
 import (
+	log "github.com/cihub/seelog"
 	"io/ioutil"
 	"net/http"
-	log "github.com/cihub/seelog"
 )
 
 func init() {
 	logger, err := log.LoggerFromConfigAsFile("seelog.xml")
-		if err != nil {
-			panic(err)
-		}
+	if err != nil {
+		panic(err)
+	}
 	log.ReplaceLogger(logger)
 	defer log.Flush()
 }

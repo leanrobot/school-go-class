@@ -10,9 +10,9 @@ package main
 import (
 	"bitbucket.org/thopet/timeserver/auth"
 	"bitbucket.org/thopet/timeserver/server"
-	log "github.com/cihub/seelog"
 	"flag"
 	"fmt"
+	log "github.com/cihub/seelog"
 	"html/template"
 	"net/http"
 	"os"
@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	VERSION      = "assignment-02.rc02"
+	VERSION = "assignment-02.rc02"
 
-	TIME_LAYOUT  = "3:04:05 PM"
+	TIME_LAYOUT          = "3:04:05 PM"
 	MILITARY_TIME_LAYOUT = "15:04:05"
 
 	DEFAULT_PORT = 8080
@@ -162,9 +162,9 @@ func logoutHandler(res http.ResponseWriter, req *http.Request) {
 func timeHandler(res http.ResponseWriter, req *http.Request) {
 	// replace empty string with the username text if logged in.
 	data := struct {
-		Time     string
+		Time         string
 		MilitaryTime string
-		Username string
+		Username     string
 	}{}
 
 	if username, err := cAuth.GetUsername(req); err == nil {
