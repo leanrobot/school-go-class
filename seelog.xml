@@ -1,0 +1,11 @@
+<seelog>
+  <outputs formatid="common">
+    <filter levels="trace,debug,info,warn,error,critical">
+      <file path="log/timeserver.log" />
+      <console />
+    </filter>
+  </outputs>
+  <formats>
+    <format id="common" format="%Date-%Time%t%File:%Line%t[%LEVEL]%t%Msg%n" />
+  </formats>
+</seelog>

@@ -1,0 +1,151 @@
+2015-02-01	[DEBUG]	&{0xc208038150}/ removed from/
+2015-02-01	[DEBUG]	&{0xc208038150}%v registered
+[ /index.html]
+2015-02-01	[DEBUG]	&{0xc208038150}/ removed from/time/
+2015-02-01	[DEBUG]	&{0xc208038150}%v registered
+[/time]
+2015-02-01	[DEBUG]	&{0xc208038150}/ removed from/login/
+2015-02-01	[DEBUG]	&{0xc208038150}%v registered
+[/login]
+2015-02-01	[DEBUG]	&{0xc208038150}/ removed from/logout/
+2015-02-01	[DEBUG]	&{0xc208038150}%v registered
+[/logout]
+2015-02-01	[DEBUG]	&{0xc208038150}%v registered
+[/css/style.css]
+2015-02-01	[INFO]	Timeserver listening on 0.0.0.0%s
+:8080
+2015-02-01	[DEBUG]	/ removed from/
+2015-02-01	[DEBUG]	%v registered
+[ /index.html]
+2015-02-01	[DEBUG]	/ removed from/time/
+2015-02-01	[DEBUG]	%v registered
+[/time]
+2015-02-01	[DEBUG]	/ removed from/login/
+2015-02-01	[DEBUG]	%v registered
+[/login]
+2015-02-01	[DEBUG]	/ removed from/logout/
+2015-02-01	[DEBUG]	%v registered
+[/logout]
+2015-02-01	[DEBUG]	%v registered
+[/css/style.css]
+2015-02-01	[INFO]	Timeserver listening on 0.0.0.0%s
+:8080
+2015-02-01	[DEBUG]	/ removed from/
+2015-02-01	[DEBUG]	%v registered
+[ /index.html]
+2015-02-01	[DEBUG]	/ removed from/time/
+2015-02-01	[DEBUG]	%v registered
+[/time]
+2015-02-01	[DEBUG]	/ removed from/login/
+2015-02-01	[DEBUG]	%v registered
+[/login]
+2015-02-01	[DEBUG]	/ removed from/logout/
+2015-02-01	[DEBUG]	%v registered
+[/logout]
+2015-02-01	[DEBUG]	%v registered
+[/css/style.css]
+2015-02-01	[INFO]	Timeserver listening on 0.0.0.0%s
+:8080
+2015-02-01	[DEBUG]	/ removed from%!(EXTRA string=/)
+2015-02-01	[DEBUG]	[ /index.html] registered
+
+2015-02-01	[DEBUG]	/ removed from%!(EXTRA string=/time/)
+2015-02-01	[DEBUG]	[/time] registered
+
+2015-02-01	[DEBUG]	/ removed from%!(EXTRA string=/login/)
+2015-02-01	[DEBUG]	[/login] registered
+
+2015-02-01	[DEBUG]	/ removed from%!(EXTRA string=/logout/)
+2015-02-01	[DEBUG]	[/logout] registered
+
+2015-02-01	[DEBUG]	[/css/style.css] registered
+
+2015-02-01	[INFO]	Timeserver listening on 0.0.0.0%s
+:8080
+2015-02-01-12:49:47	server.go.127	[DEBUG]	/ removed from%!(EXTRA string=/)
+2015-02-01-12:49:47	server.go.64	[DEBUG]	[ /index.html] registered
+
+2015-02-01-12:49:47	server.go.127	[DEBUG]	/ removed from%!(EXTRA string=/time/)
+2015-02-01-12:49:47	server.go.64	[DEBUG]	[/time] registered
+
+2015-02-01-12:49:47	server.go.127	[DEBUG]	/ removed from%!(EXTRA string=/login/)
+2015-02-01-12:49:47	server.go.64	[DEBUG]	[/login] registered
+
+2015-02-01-12:49:47	server.go.127	[DEBUG]	/ removed from%!(EXTRA string=/logout/)
+2015-02-01-12:49:47	server.go.64	[DEBUG]	[/logout] registered
+
+2015-02-01-12:49:47	server.go.64	[DEBUG]	[/css/style.css] registered
+
+2015-02-01-12:49:47	main.go.101	[INFO]	Timeserver listening on 0.0.0.0%s
+:8080
+2015-02-01-12:49:56	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/)
+2015-02-01-12:49:56	server.go:64	[DEBUG]	[ /index.html] registered
+
+2015-02-01-12:49:56	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/time/)
+2015-02-01-12:49:56	server.go:64	[DEBUG]	[/time] registered
+
+2015-02-01-12:49:56	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/login/)
+2015-02-01-12:49:56	server.go:64	[DEBUG]	[/login] registered
+
+2015-02-01-12:49:56	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/logout/)
+2015-02-01-12:49:56	server.go:64	[DEBUG]	[/logout] registered
+
+2015-02-01-12:49:56	server.go:64	[DEBUG]	[/css/style.css] registered
+
+2015-02-01-12:49:56	main.go:101	[INFO]	Timeserver listening on 0.0.0.0%s
+:8080
+2015-02-01-12:50:08	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/)
+2015-02-01-12:50:08	main.go:213	[INFO]	%s - [%s] "%s %s %s" %d -localhost:8080Sun, 01 Feb 2015 12:50:08 -0800GET/HTTP/1.1200
+2015-02-01-12:50:11	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/time/)
+2015-02-01-12:50:11	main.go:213	[INFO]	%s - [%s] "%s %s %s" %d -localhost:8080Sun, 01 Feb 2015 12:50:11 -0800GET/time/HTTP/1.1200
+2015-02-01-12:50:17	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/time/)
+2015-02-01-12:50:17	main.go:213	[INFO]	%s - [%s] "%s %s %s" %d -localhost:8080Sun, 01 Feb 2015 12:50:17 -0800GET/time/HTTP/1.1200
+2015-02-01-12:50:18	main.go:213	[INFO]	%s - [%s] "%s %s %s" %d -localhost:8080Sun, 01 Feb 2015 12:50:18 -0800GET/timeHTTP/1.1200
+2015-02-01-12:53:09	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/)
+2015-02-01-12:53:09	server.go:64	[DEBUG]	[ /index.html] registered
+
+2015-02-01-12:53:09	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/time/)
+2015-02-01-12:53:09	server.go:64	[DEBUG]	[/time] registered
+
+2015-02-01-12:53:09	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/login/)
+2015-02-01-12:53:09	server.go:64	[DEBUG]	[/login] registered
+
+2015-02-01-12:53:09	server.go:127	[DEBUG]	/ removed from%!(EXTRA string=/logout/)
+2015-02-01-12:53:09	server.go:64	[DEBUG]	[/logout] registered
+
+2015-02-01-12:53:09	server.go:64	[DEBUG]	[/css/style.css] registered
+
+2015-02-01-12:53:09	main.go:101	[INFO]	Timeserver listening on 0.0.0.0%s
+:8080
+2015-02-01-12:56:37	server.go:126	[DEBUG]	/ removed from%!(EXTRA string=/)
+2015-02-01-12:56:37	server.go:63	[DEBUG]	[ /index.html] registered
+
+2015-02-01-12:56:37	server.go:126	[DEBUG]	/ removed from%!(EXTRA string=/time/)
+2015-02-01-12:56:37	server.go:63	[DEBUG]	[/time] registered
+
+2015-02-01-12:56:37	server.go:126	[DEBUG]	/ removed from%!(EXTRA string=/login/)
+2015-02-01-12:56:37	server.go:63	[DEBUG]	[/login] registered
+
+2015-02-01-12:56:37	server.go:126	[DEBUG]	/ removed from%!(EXTRA string=/logout/)
+2015-02-01-12:56:37	server.go:63	[DEBUG]	[/logout] registered
+
+2015-02-01-12:56:37	server.go:63	[DEBUG]	[/css/style.css] registered
+
+2015-02-01-12:56:37	main.go:101	[INFO]	Timeserver listening on 0.0.0.0:8080
+
+2015-02-01-12:57:01	server.go:126	[DEBUG]	/ removed from /
+2015-02-01-12:57:01	server.go:63	[DEBUG]	[ /index.html] registered
+
+2015-02-01-12:57:01	server.go:126	[DEBUG]	/ removed from /time/
+2015-02-01-12:57:01	server.go:63	[DEBUG]	[/time] registered
+
+2015-02-01-12:57:01	server.go:126	[DEBUG]	/ removed from /login/
+2015-02-01-12:57:01	server.go:63	[DEBUG]	[/login] registered
+
+2015-02-01-12:57:01	server.go:126	[DEBUG]	/ removed from /logout/
+2015-02-01-12:57:01	server.go:63	[DEBUG]	[/logout] registered
+
+2015-02-01-12:57:01	server.go:63	[DEBUG]	[/css/style.css] registered
+
+2015-02-01-12:57:01	main.go:101	[INFO]	Timeserver listening on 0.0.0.0:8080
+

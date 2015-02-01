@@ -1,0 +1,24 @@
+Simple Time Server. Written by Tom Petit.
+Winter 2015, CSS 490 - Tactical Software Engineering
+
+version: 1.9rc
+
+GIT REPOSITORY:
+
+The git repository root is located in:
+	src/bitbucket.org/thopet/assign2.
+
+BUILDING:
+
+	A Makefile is provided in the project root. 
+	run 'make install' to build and install.
+
+	The binary generated is 'bin/timeserver'.
+
+	logs are sent to STDOUT. debug is sent to STDERR.
+
+BUGS:
+	Bugs are detailed using the BUG: tag in the code.
+TODO:
+	TODOs are detailed using the TODO: tag in the code.
+
