@@ -1,11 +1,19 @@
 package server
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
+	log "github.com/cihub/seelog"
 )
+
+func init() {
+	logger, err := log.LoggerFromConfigAsFile("seelog.xml")
+		if err != nil {
+			panic(err)
+		}
+	log.ReplaceLogger(logger)
+	defer log.Flush()
+}
 
 var BASE_TEMPLATE = "templates/base.html"
 
@@ -52,7 +60,7 @@ func (sh *StrictHandler) HandlePatterns(patterns []string, handler ViewHandler) 
 		Handler:  handler,
 	}
 	sh.Views = append(sh.Views, view)
-	fmt.Fprintf(os.Stderr, "%v registered\n", patterns)
+	log.Debugf("%v registered\n", patterns)
 
 }
 
@@ -115,7 +123,7 @@ func removeTrailingSlashes(patterns []string) {
 // slash if it appears in the pattern.
 func removeTrailingSlash(pattern string) string {
 	if string(pattern[len(pattern)-1]) == "/" {
-		fmt.Fprintln(os.Stderr, "trailingSlash removed from", pattern)
+		log.Debugf("/ removed from %s", pattern)
 		return pattern[0 : len(pattern)-1]
 	}
 	return pattern

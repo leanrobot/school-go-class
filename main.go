@@ -10,10 +10,10 @@ package main
 import (
 	"bitbucket.org/thopet/timeserver/auth"
 	"bitbucket.org/thopet/timeserver/server"
+	log "github.com/cihub/seelog"
 	"flag"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -42,8 +42,11 @@ TODO:
 // TODO read this as a flag.
 var templatesDir = "src/bitbucket.org/thopet/timeserver/templates/"
 
+var (
+	cAuth *auth.CookieAuth
+)
+
 // auth holds all the user information with a uuid association.
-var cAuth *auth.CookieAuth
 
 var templates = map[string]*template.Template{
 	"index.html":       nil,
@@ -65,8 +68,16 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Initialize global data.
+	// Initialize globals
 	cAuth = auth.NewCookieAuth()
+
+	// Setup the logger as the default package logger.
+	logger, err := log.LoggerFromConfigAsFile("seelog.xml")
+	if err != nil {
+		panic(err)
+	}
+	log.ReplaceLogger(logger)
+	defer log.Flush()
 
 	// setup and start the webserver.
 	var portString string = fmt.Sprintf(":%d", *port)
@@ -87,14 +98,14 @@ func main() {
 		Handler: vh,
 	}
 
-	fmt.Printf("Timeserver listening on 0.0.0.0%s\n", portString)
-	err := server.ListenAndServe()
+	log.Infof("Timeserver listening on 0.0.0.0%s\n", portString)
+	err = server.ListenAndServe()
 
 	if err != nil {
-		log.Fatal("TimeServer Failure: ", err)
+		log.Critical("TimeServer Failure: ", err)
 	}
 
-	fmt.Println("Timeserver exiting..")
+	log.Info("Timeserver exiting..")
 }
 
 func initTemplates() {
@@ -104,7 +115,6 @@ func initTemplates() {
 			getTemplateFilepath("menu.html"),
 			getTemplateFilepath(key),
 		))
-		fmt.Println("render", key)
 	}
 }
 
@@ -177,10 +187,7 @@ func notFoundHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func renderBaseTemplate(res http.ResponseWriter, templateName string, data interface{}) {
-	tmpl, ok := templates[templateName]
-	if ok {
-		fmt.Println("ok!")
-	}
+	tmpl, _ := templates[templateName]
 
 	err := tmpl.ExecuteTemplate(res, "base", data)
 	if err != nil {
@@ -201,8 +208,7 @@ func renderBaseTemplate(res http.ResponseWriter, templateName string, data inter
 func logRequest(req *http.Request, statusCode int) {
 	var requestTime string = time.Now().Format(time.RFC1123Z)
 
-	fmt.Printf(`%s - [%s] "%s %s %s" %d -`,
+	log.Info(`%s - [%s] "%s %s %s" %d -`,
 		req.Host, requestTime, req.Method, req.URL.String(), req.Proto,
 		statusCode)
-	fmt.Println("")
 }

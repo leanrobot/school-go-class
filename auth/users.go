@@ -63,13 +63,13 @@ func (ud *UserData) GetUser(id Uuid) (name string, err error) {
 	}
 }
 
-func (ud *UserData) RemoveUser(id Uuid) error {
+func (ud *UserData) RemoveUser(id Uuid) bool {
 	ud.lock.Lock()
 	defer ud.lock.Unlock()
 
 	if _, exists := ud.names[id]; exists {
 		delete(ud.names, id)
-		return nil
+		return true
 	}
-	return errors.New("User with id does not exist")
+	return false
 }
