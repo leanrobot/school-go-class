@@ -42,8 +42,8 @@ TODO:
 // TODO read this as a flag.
 var templatesDir = "src/bitbucket.org/thopet/timeserver/templates/"
 
-// userData holds all the user information with a uuid association.
-var userData *auth.CookieAuth
+// auth holds all the user information with a uuid association.
+var cAuth *auth.CookieAuth
 
 var templates = map[string]*template.Template{
 	"index.html":       nil,
@@ -66,7 +66,7 @@ func main() {
 	}
 
 	// Initialize global data.
-	userData = auth.NewCookieAuth()
+	cAuth = auth.NewCookieAuth()
 
 	// setup and start the webserver.
 	var portString string = fmt.Sprintf(":%d", *port)
@@ -114,7 +114,7 @@ func getTemplateFilepath(filename string) string {
 
 // indexHandler is the view for the index resource.
 func indexHandler(res http.ResponseWriter, req *http.Request) {
-	username, err := userData.GetUsername(req)
+	username, err := cAuth.GetUsername(req)
 	if err == nil {
 		data := struct{ Username string }{Username: username}
 		// a username was found, greet them.
@@ -133,7 +133,7 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 	if len(username) < 1 {
 		renderBaseTemplate(res, "login_error.html", nil)
 	} else {
-		userData.Login(res, username)
+		cAuth.Login(res, username)
 		http.Redirect(res, req, "/index.html", http.StatusFound)
 	}
 
@@ -142,7 +142,7 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 
 // logoutHandler is the view for the logout resource.
 func logoutHandler(res http.ResponseWriter, req *http.Request) {
-	userData.Logout(res, req)
+	cAuth.Logout(res, req)
 	renderBaseTemplate(res, "logout.html", nil)
 
 	logRequest(req, http.StatusFound)
@@ -157,7 +157,7 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 		Username string
 	}{}
 
-	if username, err := userData.GetUsername(req); err == nil {
+	if username, err := cAuth.GetUsername(req); err == nil {
 		data.Username = username
 	}
 
