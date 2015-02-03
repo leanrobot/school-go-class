@@ -1,12 +1,12 @@
 Simple Time Server. Written by Tom Petit.
 Winter 2015, CSS 490 - Tactical Software Engineering
 
-version: 1.9rc
+version: assignment-03.rc02
 
 GIT REPOSITORY:
 
 The git repository root is located in:
-	src/bitbucket.org/thopet/assign2.
+	go_workspace/
 
 BUILDING:
 
@@ -15,7 +15,7 @@ BUILDING:
 
 	The binary generated is 'bin/timeserver'.
 
-	logs are sent to STDOUT. debug is sent to STDERR.
+	logs are stored in /log
 
 BUGS:
 	Bugs are detailed using the BUG: tag in the code.

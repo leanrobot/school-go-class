@@ -6,15 +6,6 @@ import (
 	"net/http"
 )
 
-func init() {
-	// logger, err := log.LoggerFromConfigAsFile("etc/seelog.xml")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// log.ReplaceLogger(logger)
-	// defer log.Flush()
-}
-
 var BASE_TEMPLATE = "templates/base.html"
 
 // simple type to alias the viewHandler interface in net/http.

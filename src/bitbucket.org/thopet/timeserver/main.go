@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	VERSION = "assignment-02.rc02"
+	VERSION = "assignment-03.rc02"
 
 	TIME_LAYOUT          = "3:04:05 PM"
 	MILITARY_TIME_LAYOUT = "15:04:05"
@@ -33,9 +33,6 @@ const (
 
 /*
 TODO:
-	- add --log switch
-	- add --templates switch
-
 	- BUG: login can happen during an existing login
 		causing an orphaned UUID in the data.
 	- /logout/
@@ -57,6 +54,7 @@ var templates = map[string]*template.Template{
 	"login_error.html": nil,
 	"logout.html":      nil,
 	"404.html":         nil,
+	"about_us.html": nil,
 }
 
 // Main method for the timeserver.
@@ -96,6 +94,7 @@ func main() {
 	vh.HandlePattern("/time/", timeHandler)
 	vh.HandlePattern("/login/", loginHandler)
 	vh.HandlePattern("/logout/", logoutHandler)
+	vh.HandlePattern("/about/", aboutHandler)
 	vh.ServeStaticFile("/css/style.css", *templatesDir+"/style.css")
 
 	server := http.Server{
@@ -178,6 +177,13 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 	data.Time = time.Now().Local().Format(TIME_LAYOUT)
 	data.MilitaryTime = time.Now().UTC().Format(MILITARY_TIME_LAYOUT)
 	renderBaseTemplate(res, "time.html", data)
+
+	logRequest(req, http.StatusOK)
+}
+
+func aboutHandler(res http.ResponseWriter, req *http.Request) {
+	res.WriteHeader(http.StatusNotFound)
+	renderBaseTemplate(res, "about_us.html", nil)
 
 	logRequest(req, http.StatusOK)
 }
