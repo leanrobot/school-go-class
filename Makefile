@@ -28,3 +28,4 @@ doc:
 clean:
 	rm -f bin/*
 	rm -rf pkg/*
+	rm -rf log/*
