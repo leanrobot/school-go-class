@@ -26,6 +26,9 @@ const (
 	MILITARY_TIME_LAYOUT = "15:04:05"
 
 	DEFAULT_PORT = 8080
+
+	DEFAULT_TEMPLATES_DIR = "src/bitbucket.org/thopet/timeserver/templates"
+	DEFAULT_LOG_FILE = "seelog.xml"
 )
 
 /*
@@ -40,9 +43,6 @@ TODO:
 			- Still is invalidated (so good).
 	- TODO(assign2): error handling for hash collision?
 */
-
-// TODO read this as a flag.
-var templatesDir = "src/bitbucket.org/thopet/timeserver/templates/"
 
 var (
 	cAuth *auth.CookieAuth
@@ -64,6 +64,8 @@ func main() {
 	// setup and parse the arguments.
 	var port *int = flag.Int("port", DEFAULT_PORT, "port to launch webserver on, default is 8080")
 	var versionPrint *bool = flag.Bool("V", false, "Display version information")
+	templatesDir := flag.String("templates", DEFAULT_TEMPLATES_DIR, "the location of site templates")
+	logFile := flag.String("log", DEFAULT_LOG_FILE, "the location of the seelog configuration file")
 	flag.Parse()
 
 	if *versionPrint {
@@ -75,7 +77,7 @@ func main() {
 	cAuth = auth.NewCookieAuth()
 
 	// Setup the logger as the default package logger.
-	logger, err := log.LoggerFromConfigAsFile("seelog.xml")
+	logger, err := log.LoggerFromConfigAsFile(*logFile)
 	if err != nil {
 		panic(err)
 	}
@@ -85,7 +87,7 @@ func main() {
 	// setup and start the webserver.
 	var portString string = fmt.Sprintf(":%d", *port)
 
-	initTemplates()
+	initTemplates(*templatesDir)
 
 	// View Handler and patterns
 	vh := server.NewStrictHandler()
@@ -94,7 +96,7 @@ func main() {
 	vh.HandlePattern("/time/", timeHandler)
 	vh.HandlePattern("/login/", loginHandler)
 	vh.HandlePattern("/logout/", logoutHandler)
-	vh.ServeStaticFile("/css/style.css", getTemplateFilepath("style.css"))
+	vh.ServeStaticFile("/css/style.css", *templatesDir+"/style.css")
 
 	server := http.Server{
 		Addr:    portString,
@@ -111,18 +113,17 @@ func main() {
 	log.Info("Timeserver exiting..")
 }
 
-func initTemplates() {
+func initTemplates(templateDir string) {
 	for key, _ := range templates {
+		templatePath := func(filename string) string {
+			return templateDir+"/"+filename
+		}
 		templates[key] = template.Must(template.ParseFiles(
-			getTemplateFilepath("base.html"),
-			getTemplateFilepath("menu.html"),
-			getTemplateFilepath(key),
+			templatePath("base.html"),
+			templatePath("menu.html"),
+			templatePath(key),
 		))
 	}
-}
-
-func getTemplateFilepath(filename string) string {
-	return templatesDir + filename
 }
 
 // indexHandler is the view for the index resource.
