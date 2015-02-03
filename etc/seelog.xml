@@ -6,6 +6,6 @@
     </filter>
   </outputs>
   <formats>
-    <format id="common" format="%Date-%Time%t%File:%Line%t[%LEVEL]%t%Msg%n" />
+    <format id="common" format="%Date-%Time%t[%LEVEL]%t'%Msg'%t%Func:%Line%t%t%n" />
   </formats>
 </seelog>

@@ -7,12 +7,12 @@ import (
 )
 
 func init() {
-	logger, err := log.LoggerFromConfigAsFile("seelog.xml")
-	if err != nil {
-		panic(err)
-	}
-	log.ReplaceLogger(logger)
-	defer log.Flush()
+	// logger, err := log.LoggerFromConfigAsFile("etc/seelog.xml")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// log.ReplaceLogger(logger)
+	// defer log.Flush()
 }
 
 var BASE_TEMPLATE = "templates/base.html"
@@ -60,7 +60,7 @@ func (sh *StrictHandler) HandlePatterns(patterns []string, handler ViewHandler) 
 		Handler:  handler,
 	}
 	sh.Views = append(sh.Views, view)
-	log.Debugf("%v registered\n", patterns)
+	log.Debugf("%v registered", patterns)
 
 }
 

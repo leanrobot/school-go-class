@@ -28,7 +28,7 @@ const (
 	DEFAULT_PORT = 8080
 
 	DEFAULT_TEMPLATES_DIR = "src/bitbucket.org/thopet/timeserver/templates"
-	DEFAULT_LOG_FILE      = "seelog.xml"
+	DEFAULT_LOG_FILE      = "etc/seelog.xml"
 )
 
 /*
@@ -103,7 +103,7 @@ func main() {
 		Handler: vh,
 	}
 
-	log.Infof("Timeserver listening on 0.0.0.0%s\n", portString)
+	log.Infof("Timeserver listening on 0.0.0.0%s", portString)
 	err = server.ListenAndServe()
 
 	if err != nil {
@@ -216,7 +216,7 @@ func renderBaseTemplate(res http.ResponseWriter, templateName string, data inter
 func logRequest(req *http.Request, statusCode int) {
 	var requestTime string = time.Now().Format(time.RFC1123Z)
 
-	log.Info(`%s - [%s] "%s %s %s" %d -`,
+	log.Infof(`%s - [%s] "%s %s %s" %d -`,
 		req.Host, requestTime, req.Method, req.URL.String(), req.Proto,
 		statusCode)
 }
