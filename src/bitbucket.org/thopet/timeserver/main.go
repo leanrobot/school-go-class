@@ -28,7 +28,7 @@ const (
 	DEFAULT_PORT = 8080
 
 	DEFAULT_TEMPLATES_DIR = "src/bitbucket.org/thopet/timeserver/templates"
-	DEFAULT_LOG_FILE = "seelog.xml"
+	DEFAULT_LOG_FILE      = "seelog.xml"
 )
 
 /*
@@ -56,7 +56,7 @@ var templates = map[string]*template.Template{
 	"login.html":       nil,
 	"login_error.html": nil,
 	"logout.html":      nil,
-	"404.html": nil,
+	"404.html":         nil,
 }
 
 // Main method for the timeserver.
@@ -116,7 +116,7 @@ func main() {
 func initTemplates(templateDir string) {
 	for key, _ := range templates {
 		templatePath := func(filename string) string {
-			return templateDir+"/"+filename
+			return templateDir + "/" + filename
 		}
 		templates[key] = template.Must(template.ParseFiles(
 			templatePath("base.html"),
