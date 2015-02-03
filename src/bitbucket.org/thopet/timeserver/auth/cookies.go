@@ -48,13 +48,16 @@ BUG: the cookie is not deleted by the client. logout is still effective though.
 TODO: add error handling?
 */
 func (ca *CookieAuth) Logout(res http.ResponseWriter, req *http.Request) {
-	cookie, _ := req.Cookie(COOKIE_NAME)
+	cookie, err := req.Cookie(COOKIE_NAME)
 
-	ca.users.RemoveUser(Uuid(cookie.Value))
+	// only perform logouts for users with a cookie.
+	if err == nil {
+		ca.users.RemoveUser(Uuid(cookie.Value))
 
-	cookie.MaxAge = -1
-	cookie.Value = "LOGGED_OUT_CLEAR_DATA"
-	http.SetCookie(res, cookie)
+		cookie.MaxAge = -1
+		cookie.Value = "LOGGED_OUT_CLEAR_DATA"
+		http.SetCookie(res, cookie)
+	}
 }
 
 /*

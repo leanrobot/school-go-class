@@ -30,7 +30,9 @@ const (
 
 /*
 TODO:
-	- Refactor main.go into modules.
+	- add --log switch
+	- add --templates switch
+
 	- BUG: login can happen during an existing login
 		causing an orphaned UUID in the data.
 	- /logout/
@@ -54,6 +56,7 @@ var templates = map[string]*template.Template{
 	"login.html":       nil,
 	"login_error.html": nil,
 	"logout.html":      nil,
+	"404.html": nil,
 }
 
 // Main method for the timeserver.
@@ -187,11 +190,15 @@ func notFoundHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func renderBaseTemplate(res http.ResponseWriter, templateName string, data interface{}) {
-	tmpl, _ := templates[templateName]
-
-	err := tmpl.ExecuteTemplate(res, "base", data)
-	if err != nil {
+	var err error
+	tmpl, ok := templates[templateName]
+	if !ok {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
+	} else {
+		err = tmpl.ExecuteTemplate(res, "base", data)
+		if err != nil {
+			http.Error(res, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
 
