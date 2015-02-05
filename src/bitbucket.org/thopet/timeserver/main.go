@@ -54,7 +54,7 @@ var templates = map[string]*template.Template{
 	"login_error.html": nil,
 	"logout.html":      nil,
 	"404.html":         nil,
-	"about_us.html": nil,
+	"about_us.html":    nil,
 }
 
 // Main method for the timeserver.
