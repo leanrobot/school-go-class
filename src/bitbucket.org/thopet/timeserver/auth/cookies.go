@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"net/http"
+	"io/ioutil"
 )
 
 const (
@@ -12,12 +13,14 @@ const (
 type CookieAuth struct {
 	users      *UserData
 	cookieName string
+	authUrl  string
 }
 
-func NewCookieAuth() *CookieAuth {
-	return &CookieAuth{
+func NewCookieAuth(authUrl string) *CookieAuth {
+	return &CookieAuth {
 		users:      NewUserData(),
 		cookieName: COOKIE_NAME,
+		authUrl: authUrl,
 	}
 }
 
@@ -38,6 +41,31 @@ func (ca *CookieAuth) Login(res http.ResponseWriter, username string) error {
 	}
 	http.SetCookie(res, &cookie)
 	return nil
+}
+
+// makes a request to the remote auth server to perform a login.
+func (ca *CookieAuth) loginRequest(username string) (uuid Uuid, err error) {
+	url := "http://"+ca.authUrl+"/set?name=%s"
+	if resp, err := http.Get(url); err == nil {
+		defer resp.Body.Close()
+		if body, err := ioutil.ReadAll(resp.Body); err == nil {
+			uuid := Uuid(body)
+			return uuid, nil
+		}
+	}
+	return Uuid(""), errors.New("Login Error.")
+}
+
+// make a request to the remote auth server to perform a logout on that uuid.
+func logoutRequest(uuid Uuid) err error {
+	url := "http://"+ca.authUrl+"/clear?name=%s"
+	if resp, err := http.Get(url); err == nil {
+		// check response is within 2xx range.
+		if 200 <= resp.StatusCode && resp.StatusCode < 300 {
+			return nil
+		}
+	}
+	return Uuid(""), errors.New("Logout Error.")
 }
 
 /*

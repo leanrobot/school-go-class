@@ -64,6 +64,8 @@ func main() {
 	var versionPrint *bool = flag.Bool("V", false, "Display version information")
 	templatesDir := flag.String("templates", DEFAULT_TEMPLATES_DIR, "the location of site templates")
 	logFile := flag.String("log", DEFAULT_LOG_FILE, "the location of the seelog configuration file")
+	authUrl := flag.String("authhost", "localhost", "The network address for the auth server")
+	authPort := flag.Int("authport", 9090, "The port which to connect to the authserver on.")
 	flag.Parse()
 
 	if *versionPrint {
@@ -71,8 +73,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Initialize globals
-	cAuth = auth.NewCookieAuth()
+	// initialize the auth module
+	authHost := fmt.Sprintf("%s:%s", *authUrl, *authPort)
+	cAuth = auth.NewCookieAuth(authHost)
+
+	
 
 	// Setup the logger as the default package logger.
 	logger, err := log.LoggerFromConfigAsFile(*logFile)
