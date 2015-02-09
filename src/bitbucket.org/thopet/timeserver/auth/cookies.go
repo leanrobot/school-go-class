@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"io/ioutil"
+	"io"
 	"fmt"
 	log "github.com/cihub/seelog"
 )
@@ -47,26 +48,10 @@ func (ca *CookieAuth) Login(res http.ResponseWriter, username string) error {
 	return err 
 }
 
-// makes a request to the remote auth server to perform a login.
-func (ca *CookieAuth) loginRequest(username string) (uuid Uuid, err error) {
-	url := fmt.Sprintf("http://"+ca.authUrl+"/set?name=%s", username)
-	log.Debugf("making request to: %s", url)
-	if resp, err := http.Get(url); err == nil {
-		defer resp.Body.Close()
-		if body, err := ioutil.ReadAll(resp.Body); err == nil {
-			uuid := Uuid(body)
-			return uuid, nil
-		}
-		return Uuid(""), errors.New("No valid Uuid returned.")
-	}
-	return Uuid(""), errors.New("login name not provided.")
-}
-
 /*
 logout contains the logic for removing a uuid -> user association (via UserData)
 struct and sets the cookie for removal.
 
-BUG: the cookie is not deleted by the client. logout is still effective though.
 TODO: add error handling?
 */
 func (ca *CookieAuth) Logout(res http.ResponseWriter, req *http.Request) {
@@ -82,18 +67,6 @@ func (ca *CookieAuth) Logout(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// make a request to the remote auth server to perform a logout on that uuid.
-func (ca *CookieAuth) logoutRequest(uuid Uuid) error {
-	url := fmt.Sprintf("http://"+ca.authUrl+"/clear?uuid=%s", uuid)
-	if resp, err := http.Get(url); err == nil {
-		// check response is within 2xx range.
-		if 200 <= resp.StatusCode && resp.StatusCode < 300 {
-			return nil
-		}
-	}
-	return errors.New("Logout Error.")
-}
-
 /*
 getUsername retrieves the cookie from the request. It then uses the uuid
 to retrieve the username from the UserData struct, returning the value.
@@ -102,9 +75,9 @@ func (ca *CookieAuth) GetUsername(req *http.Request) (username string, err error
 	cookie, err := req.Cookie(COOKIE_NAME)
 	if err == nil {
 		uuid := Uuid(cookie.Value)
-		var username string
-		username, err = ca.getRequest(uuid)
+		username, err := ca.getRequest(uuid)
 		if err == nil {
+			log.Debugf("username found: [%s], %s", username, err)
 			return username, nil
 		}
 		return "", err
@@ -112,14 +85,61 @@ func (ca *CookieAuth) GetUsername(req *http.Request) (username string, err error
 	return "", err
 }
 
+// PRIVATE HELPERS =================
+
+// makes a request to the remote auth server to perform a login.
+func (ca *CookieAuth) loginRequest(username string) (uuid Uuid, err error) {
+	url := fmt.Sprintf("http://"+ca.authUrl+"/set?name=%s", username)
+
+	resp, err := get200(url)
+	if err != nil {
+		return Uuid(""), err
+	}
+	uuid = Uuid(getBodyAsString(resp.Body))
+	return uuid, nil
+}
+
+// make a request to the remote auth server to perform a logout on that uuid.
+func (ca *CookieAuth) logoutRequest(uuid Uuid) error {
+	url := fmt.Sprintf("http://"+ca.authUrl+"/clear?uuid=%s", uuid)
+
+	if _, err := get200(url); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (ca *CookieAuth) getRequest(uuid Uuid) (username string, err error) {
 	url := fmt.Sprintf("http://"+ca.authUrl+"/get?uuid=%s", uuid)
-	if resp, err := http.Get(url); err == nil {
-		defer resp.Body.Close()
-		if body, err := ioutil.ReadAll(resp.Body); err == nil {
-			name := string(body)
-			return name, nil
-		}
+
+	resp, err := get200(url)
+	if err != nil {
+		return "", err
 	}
-	return "", errors.New("Get User Error.")
+	name := getBodyAsString(resp.Body)
+	return name, nil
+}
+
+func get200(url string) (res *http.Response, err error) {
+	log.Debugf("making request to: %s", url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		panic(err)
+	}
+
+	status := resp.StatusCode
+	if 200 <= status && status < 300 {
+		return resp, nil
+	}
+	return nil, errors.New("Not a 2xx response.")
+}
+
+func getBodyAsString(body io.ReadCloser) string {
+	defer body.Close()
+	if body, err := ioutil.ReadAll(body); err == nil {
+		contents := string(body)
+		return contents
+	}
+	panic("Could not read body into string")
 }

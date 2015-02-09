@@ -63,15 +63,13 @@ func getName(res http.ResponseWriter, req *http.Request) {
 	defer logRequest(req, http.StatusOK)
 	uuid := auth.Uuid(req.FormValue("uuid"))
 	if len(uuid) > 0 { // valid request path, return 200 and username
-		log.Debugf("Valid uuid(%s)", uuid)
 		name, err := users.GetUser(uuid)
-		if err != nil { log.Error(err) }
-		log.Debugf("Username: %s", name)
-		io.WriteString(res, name)
-	} else { // non-valid request, return 400
-		log.Debug("Invalid Request [400]")
-		res.WriteHeader(http.StatusBadRequest)
+		if err == nil {
+			io.WriteString(res, name)
+			return
+		}
 	}
+	error400(res)
 }
 
 func setName(res http.ResponseWriter, req *http.Request) {
@@ -104,4 +102,9 @@ func logRequest(req *http.Request, statusCode int) {
 	fmt.Printf(`%s - [%s] "%s %s %s" %d -`+"\n",
 		req.Host, requestTime, req.Method, req.URL.String(), req.Proto,
 		statusCode)
+}
+
+func error400(res http.ResponseWriter) {
+	log.Debug("Invalid Request [400]")
+	res.WriteHeader(http.StatusBadRequest)
 }

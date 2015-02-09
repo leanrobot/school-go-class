@@ -182,16 +182,16 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 	if username, err := cAuth.GetUsername(req); err == nil {
 		data.Username = username
 	}
-
 	data.Time = time.Now().Local().Format(TIME_LAYOUT)
 	data.MilitaryTime = time.Now().UTC().Format(MILITARY_TIME_LAYOUT)
+
 	renderBaseTemplate(res, "time.html", data)
 }
 
 func aboutHandler(res http.ResponseWriter, req *http.Request) {
 	defer logRequest(req, http.StatusOK)
 
-	res.WriteHeader(http.StatusNotFound)
+	res.WriteHeader(http.StatusOK)
 	renderBaseTemplate(res, "about_us.html", nil)
 }
 
