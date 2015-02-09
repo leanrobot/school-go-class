@@ -74,7 +74,7 @@ func main() {
 	}
 
 	// initialize the auth module
-	authHost := fmt.Sprintf("%s:%s", *authUrl, *authPort)
+	authHost := fmt.Sprintf("%s:%d", *authUrl, *authPort)
 	cAuth = auth.NewCookieAuth(authHost)
 
 	
@@ -132,42 +132,46 @@ func initTemplates(templateDir string) {
 
 // indexHandler is the view for the index resource.
 func indexHandler(res http.ResponseWriter, req *http.Request) {
+	defer logRequest(req, http.StatusOK)
+
 	username, err := cAuth.GetUsername(req)
 	if err == nil {
 		data := struct{ Username string }{Username: username}
 		// a username was found, greet them.
 		renderBaseTemplate(res, "index.html", data)
 	} else {
+		log.Error(err)
 		renderBaseTemplate(res, "login.html", nil)
 	}
-
-	logRequest(req, http.StatusOK)
 }
 
 // loginHandler is the view for the login resource.
 func loginHandler(res http.ResponseWriter, req *http.Request) {
+	defer logRequest(req, http.StatusFound)
+
 	// get the requested username
 	username := req.FormValue("name")
 	if len(username) < 1 {
 		renderBaseTemplate(res, "login_error.html", nil)
 	} else {
-		cAuth.Login(res, username)
+		err := cAuth.Login(res, username)
+		if err != nil { log.Error(err) }
 		http.Redirect(res, req, "/index.html", http.StatusFound)
 	}
-
-	logRequest(req, http.StatusFound)
 }
 
 // logoutHandler is the view for the logout resource.
 func logoutHandler(res http.ResponseWriter, req *http.Request) {
+	defer logRequest(req, http.StatusFound)
+
 	cAuth.Logout(res, req)
 	renderBaseTemplate(res, "logout.html", nil)
-
-	logRequest(req, http.StatusFound)
 }
 
 // timeHandler is the view for the time resource.
 func timeHandler(res http.ResponseWriter, req *http.Request) {
+	defer logRequest(req, http.StatusOK)
+
 	// replace empty string with the username text if logged in.
 	data := struct {
 		Time         string
@@ -182,23 +186,21 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 	data.Time = time.Now().Local().Format(TIME_LAYOUT)
 	data.MilitaryTime = time.Now().UTC().Format(MILITARY_TIME_LAYOUT)
 	renderBaseTemplate(res, "time.html", data)
-
-	logRequest(req, http.StatusOK)
 }
 
 func aboutHandler(res http.ResponseWriter, req *http.Request) {
+	defer logRequest(req, http.StatusOK)
+
 	res.WriteHeader(http.StatusNotFound)
 	renderBaseTemplate(res, "about_us.html", nil)
-
-	logRequest(req, http.StatusOK)
 }
 
 // notFoundHandler is the view for the global 404 resource.
 func notFoundHandler(res http.ResponseWriter, req *http.Request) {
+	defer logRequest(req, http.StatusNotFound)
+
 	res.WriteHeader(http.StatusNotFound)
 	renderBaseTemplate(res, "404.html", nil)
-
-	logRequest(req, http.StatusNotFound)
 }
 
 func renderBaseTemplate(res http.ResponseWriter, templateName string, data interface{}) {

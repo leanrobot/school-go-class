@@ -7,9 +7,14 @@ import (
 	"io"
 	"sync"
 	"time"
+	// log "github.com/cihub/seelog"
 )
 
 type Uuid string
+
+func (u Uuid) String() string {
+	return string(u)
+}
 
 type UserData struct {
 	// key is a unique md5 hash generated for the user.
@@ -46,8 +51,10 @@ func (ud *UserData) AddUser(name string) (id Uuid, err error) {
 	if _, exists := ud.names[id]; !exists {
 		// no uuid collision in the map, create the user and return their id.
 		ud.names[id] = name
+		ud.debugLog()
 		return id, nil
 	}
+	ud.debugLog()
 	return "", errors.New("uuid collision, could not create user")
 }
 
@@ -56,6 +63,7 @@ The GetUser function retrieves a username based on their uuid.
 If the user does not exist, an error is returned.
 */
 func (ud *UserData) GetUser(id Uuid) (name string, err error) {
+	ud.debugLog()
 	if name, exists := ud.names[id]; exists {
 		return name, nil
 	} else {
@@ -69,7 +77,13 @@ func (ud *UserData) RemoveUser(id Uuid) bool {
 
 	if _, exists := ud.names[id]; exists {
 		delete(ud.names, id)
+		ud.debugLog()
 		return true
 	}
+	ud.debugLog()
 	return false
+}
+
+func (ud *UserData) debugLog() {
+	fmt.Printf("User data: %v", ud.names)
 }

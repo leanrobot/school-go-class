@@ -114,7 +114,6 @@ func removeTrailingSlashes(patterns []string) {
 // slash if it appears in the pattern.
 func removeTrailingSlash(pattern string) string {
 	if string(pattern[len(pattern)-1]) == "/" {
-		log.Debugf("/ removed from %s", pattern)
 		return pattern[0 : len(pattern)-1]
 	}
 	return pattern

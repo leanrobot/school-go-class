@@ -1,11 +1,16 @@
 <seelog>
-  <outputs formatid="common">
-    <filter levels="trace,debug,info,warn,error,critical">
-      <file path="log/timeserver.log" />
-      <console />
-    </filter>
-  </outputs>
-  <formats>
-    <format id="common" format="%Date-%Time%t[%LEVEL]%t'%Msg'%t%Func:%Line%t%t%n" />
-  </formats>
+	<outputs>
+		<filter levels="trace,warn,error,critical" formatid="common">
+			<file path="log/timeserver.log" />
+			<console />
+		</filter>j
+		<filter levels="info,debug" formatid="notrace">
+			<file path="log/timeserver.log" />
+			<console />
+		</filter>
+	</outputs>
+	<formats>
+		<format id="common" format="%Date-%Time%t[%LEVEL]%t'%Msg'%t%Func:%Line%t%t%n" />
+		<format id="notrace" format="%Date-%Time%t[%LEVEL]%t %Msg%n" />
+	</formats>
 </seelog>
