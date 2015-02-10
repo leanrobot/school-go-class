@@ -3,16 +3,12 @@ package main
 import (
 	"bitbucket.org/thopet/timeserver/auth"
 	"bitbucket.org/thopet/timeserver/server"
+	"bitbucket.org/thopet/timeserver/config"
 	"net/http"
 	log "github.com/cihub/seelog"
-	"flag"
 	"fmt"
 	"io"
 	"time"
-)
-
-const (
-	DEFAULT_PORT = 9090
 )
 
 var (
@@ -20,18 +16,6 @@ var (
 )
 
 func main() {
-	// TODO logging move this to shared package
-	// Setup the logger as the default package logger.
-	//logger, err := log.LoggerFromConfigAsFile(*logFile)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// log.ReplaceLogger(logger)
-	// defer log.Flush()
-
-	// parse command line flags
-	authPort := flag.Int("port", DEFAULT_PORT, 
-		"port to listen for authentication requests on")
 
 	// initialize the UserData manager.
 	users = auth.NewUserData()
@@ -43,13 +27,13 @@ func main() {
 	vh.HandlePattern("/set", setName)
 	vh.HandlePattern("/clear", clearName)
 
-	portString := fmt.Sprintf(":%d", *authPort)
+	portString := fmt.Sprintf(":%d", config.AuthPort)
 	server := http.Server{
 		Addr:    portString,
 		Handler: vh,
 	}
 
-	log.Infof("authserver listening on port %d", *authPort)
+	log.Infof("authserver listening on port %d", config.AuthPort)
 	err := server.ListenAndServe()
 
 	if err != nil {

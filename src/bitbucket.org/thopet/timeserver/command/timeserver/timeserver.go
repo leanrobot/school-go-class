@@ -10,25 +10,17 @@ package main
 import (
 	"bitbucket.org/thopet/timeserver/auth"
 	"bitbucket.org/thopet/timeserver/server"
-	"flag"
+	"bitbucket.org/thopet/timeserver/config"
 	"fmt"
 	log "github.com/cihub/seelog"
 	"html/template"
 	"net/http"
-	"os"
 	"time"
 )
 
 const (
-	VERSION = "assignment-03.rc02"
-
 	TIME_LAYOUT          = "3:04:05 PM"
 	MILITARY_TIME_LAYOUT = "15:04:05"
-
-	DEFAULT_PORT = 8080
-
-	DEFAULT_TEMPLATES_DIR = "src/bitbucket.org/thopet/timeserver/templates"
-	DEFAULT_LOG_FILE      = "etc/seelog.xml"
 )
 
 /*
@@ -42,10 +34,10 @@ TODO:
 */
 
 var (
+	// auth holds all the user information with a uuid association.
 	cAuth *auth.CookieAuth
 )
 
-// auth holds all the user information with a uuid association.
 
 var templates = map[string]*template.Template{
 	"index.html":       nil,
@@ -59,38 +51,14 @@ var templates = map[string]*template.Template{
 
 // Main method for the timeserver.
 func main() {
-	// setup and parse the arguments.
-	var port *int = flag.Int("port", DEFAULT_PORT, "port to launch webserver on, default is 8080")
-	var versionPrint *bool = flag.Bool("V", false, "Display version information")
-	templatesDir := flag.String("templates", DEFAULT_TEMPLATES_DIR, "the location of site templates")
-	logFile := flag.String("log", DEFAULT_LOG_FILE, "the location of the seelog configuration file")
-	authUrl := flag.String("authhost", "localhost", "The network address for the auth server")
-	authPort := flag.Int("authport", 9090, "The port which to connect to the authserver on.")
-	flag.Parse()
-
-	if *versionPrint {
-		fmt.Println(VERSION)
-		os.Exit(0)
-	}
-
 	// initialize the auth module
-	authHost := fmt.Sprintf("%s:%d", *authUrl, *authPort)
+	authHost := fmt.Sprintf("%s:%d", config.AuthUrl, config.AuthPort)
 	cAuth = auth.NewCookieAuth(authHost)
 
-	
-
-	// Setup the logger as the default package logger.
-	logger, err := log.LoggerFromConfigAsFile(*logFile)
-	if err != nil {
-		panic(err)
-	}
-	log.ReplaceLogger(logger)
-	defer log.Flush()
-
 	// setup and start the webserver.
-	var portString string = fmt.Sprintf(":%d", *port)
+	portString := fmt.Sprintf(":%d", config.Port)
 
-	initTemplates(*templatesDir)
+	initTemplates(config.TemplatesDir)
 
 	// View Handler and patterns
 	vh := server.NewStrictHandler()
@@ -100,7 +68,7 @@ func main() {
 	vh.HandlePattern("/login/", loginHandler)
 	vh.HandlePattern("/logout/", logoutHandler)
 	vh.HandlePattern("/about/", aboutHandler)
-	vh.ServeStaticFile("/css/style.css", *templatesDir+"/style.css")
+	vh.ServeStaticFile("/css/style.css", config.TemplatesDir+"/style.css")
 
 	server := http.Server{
 		Addr:    portString,
@@ -108,7 +76,7 @@ func main() {
 	}
 
 	log.Infof("Timeserver listening on 0.0.0.0%s", portString)
-	err = server.ListenAndServe()
+	err := server.ListenAndServe()
 
 	if err != nil {
 		log.Critical("TimeServer Failure: ", err)
