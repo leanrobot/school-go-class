@@ -78,7 +78,7 @@ func initFlags() {
 	//Flags related to saving the authserver map to disk
 	flag.StringVar(&DumpFile, "dumpfile", "dumpfile.json", 
 		`The location of the dumpfile for user data.`)
-	flag.DurationVar(&CheckpointInterval, )
+	//flag.DurationVar(&CheckpointInterval, )
 
 	flag.Parse()
 }
