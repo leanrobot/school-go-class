@@ -81,7 +81,6 @@ func main() {
 	if err != nil {
 		log.Critical("TimeServer Failure: ", err)
 	}
-
 	log.Info("Timeserver exiting..")
 }
 

@@ -16,6 +16,10 @@ const (
 	DEFAULT_LOG_FILE      = "etc/seelog.xml"
 	DEFAULT_TEMPLATES_DIR = "src/bitbucket.org/thopet/timeserver/templates"
 
+	DEFAULT_CHECKPOINT_INTERVAL = 10 * time.Second
+	DEFAULT_AVG_RESPONSE = 700
+	DEFAULT_DEVIATION = 100
+
 )
 
 var (
@@ -27,8 +31,12 @@ var (
 	AuthUrl string
 
 	// Flags related to simulating load.
-	AvgResponseMs time.Duration
-	DeviationMs time.Duration
+	AvgResponse time.Duration
+	Deviation time.Duration
+
+	//Flags related to saving the authserver map to disk
+	DumpFile string
+	CheckpointInterval time.Duration
 
 	VersionPrint bool
 	TemplatesDir string
@@ -60,14 +68,17 @@ func initFlags() {
 		"The port which to connect to the authserver on.")
 
 	// Flags related to simulating load.
-	avgResponseMs := flag.Int("avg-response-ms", 700,
+	flag.DurationVar(&AvgResponse, "avg-response", DEFAULT_AVG_RESPONSE,
 		`The average amount of duration in milliseconds to wait in order
 		to simulate load`)
-	deviationMs := flag.Int("deviation-ms", 100,
+	flag.DurationVar(&Deviation, "deviation", DEFAULT_DEVIATION,
 		`The value of one unit of standard deviation from the
 		average response.`)
-	AvgResponseMs := avgResponseMs * time.Millisecond
-	DeviationMs := deviationMs * time.Millisecond
+
+	//Flags related to saving the authserver map to disk
+	flag.StringVar(&DumpFile, "dumpfile", "dumpfile.json", 
+		`The location of the dumpfile for user data.`)
+	flag.DurationVar(&CheckpointInterval, )
 
 	flag.Parse()
 }

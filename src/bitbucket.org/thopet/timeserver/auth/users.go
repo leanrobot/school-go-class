@@ -7,6 +7,8 @@ import (
 	"io"
 	"sync"
 	"time"
+	"bitbucket.org/thopet/timeserver/config"
+	"io/ioutil"
 	// log "github.com/cihub/seelog"
 )
 
@@ -86,4 +88,36 @@ func (ud *UserData) RemoveUser(id Uuid) bool {
 
 func (ud *UserData) debugLog() {
 	fmt.Printf("User data: %v", ud.names)
+}
+
+func (ud *UserData) saveDumpFile() {
+	dumpFilename := config.DumpFile
+
+	// copy the dumpfile to a backup
+	dumpFileBytes := ioutil.ReadFile(dumpFilename)
+	backupFile, err := os.Create(dumpFilename+".bak")
+	if err != nil {
+		panic(err)
+	}
+	backupFile.Write(dumpFileBytes)
+
+	// copy the user dictionary.
+	dataCopy := map[Uuid]string
+	ud.lock.Lock()
+	for key, value := range ud.names {
+		dataCopy[key] = value
+	}
+	ud.lock.Unlock()
+
+	// write the copy to dumpfile.
+	dumpfile, err := os.Create(dumpFilename)
+	dumpfile.Write(json.Marshal(dataCopy))
+
+	// load from the dumpfile()
+	// TODO catch error
+	dumpFileBytes, _ = ioutil.ReadFile(dumpFilename)
+	namesCheck := map[Uuid]string
+	json.Unmarshal(dumpFileBytes, &namesCheck)
+	// compare to the names map.
+	//for key, value := range namescheck
 }
