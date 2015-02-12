@@ -51,10 +51,6 @@ var templates = map[string]*template.Template{
 
 // Main method for the timeserver.
 func main() {
-	// initialize the auth module
-	authHost := fmt.Sprintf("%s:%d", config.AuthUrl, config.AuthPort)
-	cAuth = auth.NewCookieAuth(authHost)
-
 	// setup and start the webserver.
 	portString := fmt.Sprintf(":%d", config.Port)
 
@@ -101,7 +97,7 @@ func initTemplates(templateDir string) {
 func indexHandler(res http.ResponseWriter, req *http.Request) {
 	defer logRequest(req, http.StatusOK)
 
-	username, err := cAuth.GetUsername(req)
+	username, err := session.Username(req)
 	if err == nil {
 		data := struct{ Username string }{Username: username}
 		// a username was found, greet them.
@@ -121,7 +117,7 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 	if len(username) < 1 {
 		renderBaseTemplate(res, "login_error.html", nil)
 	} else {
-		err := cAuth.Login(res, username)
+		err := session.Create(res, username)
 		if err != nil { log.Error(err) }
 		http.Redirect(res, req, "/index.html", http.StatusFound)
 	}
@@ -131,7 +127,7 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 func logoutHandler(res http.ResponseWriter, req *http.Request) {
 	defer logRequest(req, http.StatusFound)
 
-	cAuth.Logout(res, req)
+	session.Destroy(req, res)
 	renderBaseTemplate(res, "logout.html", nil)
 }
 
@@ -146,7 +142,7 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 		Username     string
 	}{}
 
-	if username, err := cAuth.GetUsername(req); err == nil {
+	if username, err := session.Username(); err == nil {
 		data.Username = username
 	}
 	data.Time = time.Now().Local().Format(TIME_LAYOUT)
