@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"crypto/md5"
 	"io"
+	"time"
 	"fmt"
 )
 
@@ -25,7 +26,7 @@ func Create(res http.ResponseWriter, name string) error {
 	if err != nil {
 		return err
 	}
-	cookie.Create(res, sessionName, name)
+	cookie.Create(res, sessionName, uuid)
 	return nil
 }
 
@@ -61,9 +62,9 @@ func Username(req *http.Request) (string, error) {
 
 func uuidGen() string {
 	idHash := md5.New()
-	io.WriteString(idHash, name)
+	io.WriteString(idHash, time.Now().Format(time.UnixDate))
 	io.WriteString(idHash, time.Now().Format(time.UnixDate))
 
-	uuid = Uuid(fmt.Sprintf("%x", idHash.Sum(nil)))
+	uuid := fmt.Sprintf("%x", idHash.Sum(nil))
 	return uuid
 }

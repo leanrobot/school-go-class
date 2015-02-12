@@ -15,7 +15,8 @@ var (
 )
 
 func init() {
-	httpAuthUrl := "http://"+config.AuthUrl
+	httpAuthUrl = fmt.Sprintf("http://%s:%d", config.AuthUrl, config.AuthPort)
+	log.Debug(httpAuthUrl)
 
 	// test that the authserver is running.
 	statusUrl := fmt.Sprintf(httpAuthUrl+"/status")
@@ -25,7 +26,7 @@ func init() {
 }
 
 func Name(uuid string) (string, error) {
-	url := fmt.Sprintf(httpAuthUrl+"/get?cookie=%s", uuid)
+	url := fmt.Sprintf("%s/get?cookie=%s", httpAuthUrl, uuid)
 
 	resp, err := get200(url)
 	if err != nil {
@@ -36,7 +37,8 @@ func Name(uuid string) (string, error) {
 }
 
 func SetName(uuid string, name string) error {
-	url := fmt.Sprintf(httpAuthUrl+"/set?cookie=%s&name=%s", uuid, name)
+	url := fmt.Sprintf("%s/set?cookie=%s&name=%s",
+		httpAuthUrl, uuid, name)
 	
 	_, err := get200(url)
 	if err != nil {
@@ -46,7 +48,7 @@ func SetName(uuid string, name string) error {
 }
 
 func ClearName(uuid string) error {
-	url := fmt.Sprintf(httpAuthUrl+"/clear?cookie=%s", uuid)
+	url := fmt.Sprintf("%s/clear?cookie=%s", httpAuthUrl, uuid)
 
 	if _, err := get200(url); err != nil {
 		return err

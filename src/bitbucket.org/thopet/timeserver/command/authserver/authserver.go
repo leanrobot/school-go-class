@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bitbucket.org/thopet/timeserver/auth"
 	"bitbucket.org/thopet/timeserver/server"
 	"bitbucket.org/thopet/timeserver/config"
 	"net/http"
@@ -9,16 +8,21 @@ import (
 	"fmt"
 	"io"
 	"time"
+	cmap "bitbucket.org/thopet/timeserver/concurrentmap"
+)
+
+const (
+	AUTH_KEY string = "cookie"
+	NAME_KEY string = "name"
 )
 
 var (
-	users *auth.UserData 
+	users *cmap.CMap 
 )
 
 func main() {
-
-	// initialize the UserData manager.
-	users = auth.NewUserData()
+	// initialize the concurrent map.
+	users = cmap.New()
 
 	// View Handler and patterns
 	vh := server.NewStrictHandler()
@@ -45,10 +49,10 @@ func main() {
 
 func getName(res http.ResponseWriter, req *http.Request) {
 	defer logRequest(req, http.StatusOK)
-	uuid := auth.Uuid(req.FormValue("uuid"))
+	uuid := req.FormValue(AUTH_KEY)
 	if len(uuid) > 0 { // valid request path, return 200 and username
-		name, err := users.GetUser(uuid)
-		if err == nil {
+		name, ok := users.Get(uuid)
+		if ok {
 			io.WriteString(res, name)
 			return
 		}
@@ -58,10 +62,10 @@ func getName(res http.ResponseWriter, req *http.Request) {
 
 func setName(res http.ResponseWriter, req *http.Request) {
 	defer logRequest(req, http.StatusOK)
-	name := req.FormValue("name")
-	if len(name) > 0 { // valid request path, return 200
-		uuid, _ := users.AddUser(name)
-		io.WriteString(res, uuid.String())
+	uuid := req.FormValue(AUTH_KEY)
+	name := req.FormValue(NAME_KEY)
+	if len(name) > 0 && len(uuid) > 0 { // valid request path, return 200
+		users.Set(uuid, name)
 	} else { // non-valid request, return 400
 		res.WriteHeader(http.StatusBadRequest)
 	}
@@ -69,14 +73,11 @@ func setName(res http.ResponseWriter, req *http.Request) {
 
 func clearName(res http.ResponseWriter, req *http.Request) {
 	defer logRequest(req, http.StatusOK)
-	uuid := auth.Uuid(req.FormValue("uuid"))
-	if len(uuid) > 0 { // valid request path, return 200 and username
-		ok := users.RemoveUser(uuid)
-		if !ok {
-			res.WriteHeader(http.StatusBadRequest)
-		}
+	uuid := req.FormValue("uuid")
+	if len(uuid) > 0 {
+		users.Del(uuid)
 	} else { // non-valid request, return 400
-		res.WriteHeader(http.StatusBadRequest)
+		error400(res)
 	}
 }
 
@@ -89,6 +90,6 @@ func logRequest(req *http.Request, statusCode int) {
 }
 
 func error400(res http.ResponseWriter) {
-	log.Debug("Invalid Request [400]")
+	log.Error("Invalid Request [400]")
 	res.WriteHeader(http.StatusBadRequest)
 }

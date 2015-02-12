@@ -8,9 +8,10 @@ Winter 2015, CSS 490 - Tactical Software Engineering
 package main
 
 import (
-	"bitbucket.org/thopet/timeserver/auth"
 	"bitbucket.org/thopet/timeserver/server"
 	"bitbucket.org/thopet/timeserver/config"
+	"bitbucket.org/thopet/timeserver/session"
+
 	"fmt"
 	log "github.com/cihub/seelog"
 	"html/template"
@@ -32,11 +33,6 @@ TODO:
 			- Still is invalidated (so good).
 	- TODO(assign2): error handling for hash collision?
 */
-
-var (
-	// auth holds all the user information with a uuid association.
-	cAuth *auth.CookieAuth
-)
 
 
 var templates = map[string]*template.Template{
@@ -142,7 +138,7 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 		Username     string
 	}{}
 
-	if username, err := session.Username(); err == nil {
+	if username, err := session.Username(req); err == nil {
 		data.Username = username
 	}
 	data.Time = time.Now().Local().Format(TIME_LAYOUT)
