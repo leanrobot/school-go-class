@@ -5,6 +5,9 @@ import (
 	"bitbucket.org/thopet/timeserver/cookie"
 	"bitbucket.org/thopet/timeserver/config"
 	"net/http"
+	"crypto/md5"
+	"io"
+	"fmt"
 )
 
 var (
@@ -56,7 +59,11 @@ func Username(req *http.Request) (string, error) {
 	return name, nil
 }
 
-// TODO
 func uuidGen() string {
-	return "TEST TEST TEST TEST"
+	idHash := md5.New()
+	io.WriteString(idHash, name)
+	io.WriteString(idHash, time.Now().Format(time.UnixDate))
+
+	uuid = Uuid(fmt.Sprintf("%x", idHash.Sum(nil)))
+	return uuid
 }
