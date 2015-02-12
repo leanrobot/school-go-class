@@ -1,8 +1,13 @@
 package netauth
 
 import (
-	"bitbucket.org/thopet/timeserver/auth"
+	"fmt"
 	"bitbucket.org/thopet/timeserver/config"
+	"net/http"
+	"io"
+	"io/ioutil"
+	log "github.com/cihub/seelog"
+	"errors"
 )
 
 var (
@@ -10,28 +15,16 @@ var (
 )
 
 func init() {
-	httpAuthUrl := "http://"+config.authUrl
+	httpAuthUrl := "http://"+config.AuthUrl
 
 	// test that the authserver is running.
 	statusUrl := fmt.Sprintf(httpAuthUrl+"/status")
 	// causes a panic if communication cannot be established with the
 	// authserver.
-	_, err = get200(statusUrl) 
-	
+	get200(statusUrl) 
 }
 
-func SetName(name string) (string, error) {
-	uuid := uuidGen()
-
-	url := fmt.Sprintf(httpAuthUrl+"/set?cookie=%s&name=%s", uuid, name)
-	resp, err = get200(url)
-	if err != nil {
-		return "", err
-	}
-	return uuid, nil
-}
-
-func Name(uuid string) string {
+func Name(uuid string) (string, error) {
 	url := fmt.Sprintf(httpAuthUrl+"/get?cookie=%s", uuid)
 
 	resp, err := get200(url)
@@ -42,6 +35,16 @@ func Name(uuid string) string {
 	return name, nil
 }
 
+func SetName(uuid string, name string) error {
+	url := fmt.Sprintf(httpAuthUrl+"/set?cookie=%s&name=%s", uuid, name)
+	
+	_, err := get200(url)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func ClearName(uuid string) error {
 	url := fmt.Sprintf(httpAuthUrl+"/clear?cookie=%s", uuid)
 
@@ -50,6 +53,8 @@ func ClearName(uuid string) error {
 	}
 	return nil
 }
+
+// PRIVATE HELPERS ==========
 
 func get200(url string) (res *http.Response, err error) {
 	log.Debugf("making request to: %s", url)
@@ -66,7 +71,11 @@ func get200(url string) (res *http.Response, err error) {
 	return nil, errors.New("Not a 2xx response.")
 }
 
-// TODO
-func uuidGen() string {
-	return "TEST TEST TEST TEST"
+func getBodyAsString(body io.ReadCloser) string {
+	defer body.Close()
+	if body, err := ioutil.ReadAll(body); err == nil {
+		contents := string(body)
+		return contents
+	}
+	panic("Could not read body into string")
 }

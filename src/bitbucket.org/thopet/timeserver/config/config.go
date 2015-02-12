@@ -20,6 +20,7 @@ const (
 	DEFAULT_AVG_RESPONSE = 700
 	DEFAULT_DEVIATION = 100
 
+	SESSION_NAME = "timeserver_css490_tompetit"
 )
 
 var (
