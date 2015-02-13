@@ -8,21 +8,18 @@ import (
 
 var BASE_TEMPLATE = "templates/base.html"
 
-// simple type to alias the viewHandler interface in net/http.
-type ViewHandler func(http.ResponseWriter, *http.Request)
-
 // Strict Handler conforms to the Handler interface in net/http.
 // https://golang.org/pkg/net/http/#Handler
 type StrictHandler struct {
 	Views           []StrictView
-	NotFoundHandler ViewHandler
+	NotFoundHandler http.HandlerFunc
 }
 
 // StrictView is a simple association between url resource paths and
 // a handler view.
 type StrictView struct {
 	Patterns []string
-	Handler  ViewHandler
+	Handler  http.HandlerFunc
 }
 
 /*
@@ -44,7 +41,7 @@ func NewStrictHandler() *StrictHandler {
 HandlePatterns registers several url resources to a view. Trailing slashes are
 sanitized out of the url patterns automatically.
 */
-func (sh *StrictHandler) HandlePatterns(patterns []string, handler ViewHandler) {
+func (sh *StrictHandler) HandlePatterns(patterns []string, handler http.HandlerFunc) {
 	removeTrailingSlashes(patterns)
 	var view StrictView = StrictView{
 		Patterns: patterns,
@@ -59,7 +56,7 @@ func (sh *StrictHandler) HandlePatterns(patterns []string, handler ViewHandler) 
 HandlePattern registers a single url resource to a view. Please reference the
 documentation for HandlePatterns for more information.
 */
-func (sh *StrictHandler) HandlePattern(pattern string, handler ViewHandler) {
+func (sh *StrictHandler) HandlePattern(pattern string, handler http.HandlerFunc) {
 	sh.HandlePatterns([]string{pattern}, handler)
 }
 

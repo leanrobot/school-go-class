@@ -21,6 +21,8 @@ const (
 	DEFAULT_DEVIATION = 100
 
 	SESSION_NAME = "timeserver_css490_tompetit"
+
+	DEFAULT_MAX_REQUESTS = 0
 )
 
 var (
@@ -42,6 +44,8 @@ var (
 	VersionPrint bool
 	TemplatesDir string
 	LogConfigFile string
+
+	RequestLimit int
 )
 
 func init() {
@@ -80,6 +84,10 @@ func initFlags() {
 	flag.StringVar(&DumpFile, "dumpfile", "dumpfile.json", 
 		`The location of the dumpfile for user data.`)
 	//flag.DurationVar(&CheckpointInterval, )
+
+	//Flags for request limiting
+	flag.IntVar(&RequestLimit, "max-inflight", 0,
+		"The maximum amount of conurrent requests to serve.")
 
 	flag.Parse()
 }
