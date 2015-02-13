@@ -131,7 +131,10 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 		Time         string
 		MilitaryTime string
 		Username     string
-	}{}
+	}{
+		Time = time.Now().Local().Format(TIME_LAYOUT),
+		MilitaryTime = time.Now().UTC().Format(MILITARY_TIME_LAYOUT),
+	}
 
 	// TODO implement random load simulation
 	time.Sleep(5 * time.Second)
@@ -139,8 +142,6 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 	if username, err := session.Username(req); err == nil {
 		data.Username = username
 	}
-	data.Time = time.Now().Local().Format(TIME_LAYOUT)
-	data.MilitaryTime = time.Now().UTC().Format(MILITARY_TIME_LAYOUT)
 
 	renderBaseTemplate(res, "time.html", data)
 }
