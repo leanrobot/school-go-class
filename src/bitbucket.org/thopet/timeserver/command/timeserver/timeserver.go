@@ -17,6 +17,7 @@ import (
 	"html/template"
 	"net/http"
 	"time"
+	"math/rand"
 )
 
 const (
@@ -132,12 +133,18 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 		MilitaryTime string
 		Username     string
 	}{
-		Time = time.Now().Local().Format(TIME_LAYOUT),
-		MilitaryTime = time.Now().UTC().Format(MILITARY_TIME_LAYOUT),
+		Time : time.Now().Local().Format(TIME_LAYOUT),
+		MilitaryTime : time.Now().UTC().Format(MILITARY_TIME_LAYOUT),
 	}
 
 	// TODO implement random load simulation
-	time.Sleep(5 * time.Second)
+	wait := rand.NormFloat64() * float64(config.Deviation) +
+		float64(config.AvgResponse)
+	if wait < 0 {
+		wait = 0
+	}
+	log.Infof("sleep duration is %d", wait)
+	time.Sleep(time.Duration(wait) * time.Millisecond)
 
 	if username, err := session.Username(req); err == nil {
 		data.Username = username

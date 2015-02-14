@@ -17,8 +17,8 @@ const (
 	DEFAULT_TEMPLATES_DIR = "src/bitbucket.org/thopet/timeserver/templates"
 
 	DEFAULT_CHECKPOINT_INTERVAL = 10 * time.Second
-	DEFAULT_AVG_RESPONSE = 700
-	DEFAULT_DEVIATION = 100
+	DEFAULT_AVG_RESPONSE = 5000
+	DEFAULT_DEVIATION = 500
 
 	SESSION_NAME = "timeserver_css490_tompetit"
 
@@ -34,8 +34,8 @@ var (
 	AuthUrl string
 
 	// Flags related to simulating load.
-	AvgResponse time.Duration
-	Deviation time.Duration
+	AvgResponse int
+	Deviation int
 
 	//Flags related to saving the authserver map to disk
 	DumpFile string
@@ -73,10 +73,10 @@ func initFlags() {
 		"The port which to connect to the authserver on.")
 
 	// Flags related to simulating load.
-	flag.DurationVar(&AvgResponse, "avg-response", DEFAULT_AVG_RESPONSE,
+	flag.IntVar(&AvgResponse, "avg-response-ms", DEFAULT_AVG_RESPONSE,
 		`The average amount of duration in milliseconds to wait in order
 		to simulate load`)
-	flag.DurationVar(&Deviation, "deviation", DEFAULT_DEVIATION,
+	flag.IntVar(&Deviation, "deviation-ms", DEFAULT_DEVIATION,
 		`The value of one unit of standard deviation from the
 		average response.`)
 
