@@ -75,7 +75,7 @@ func getName(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
-	error400(res)
+	server.Error400(res, req)
 }
 
 func setName(res http.ResponseWriter, req *http.Request) {
@@ -85,7 +85,7 @@ func setName(res http.ResponseWriter, req *http.Request) {
 	if len(name) > 0 && len(uuid) > 0 { // valid request path, return 200
 		users.Set(uuid, name)
 	} else { // non-valid request, return 400
-		error400(res)
+		server.Error400(res, req)
 	}
 }
 
@@ -95,11 +95,6 @@ func clearName(res http.ResponseWriter, req *http.Request) {
 	if len(uuid) > 0 {
 		users.Del(uuid)
 	} else { // non-valid request, return 400
-		error400(res)
+		server.Error400(res, req)
 	}
-}
-
-func error400(res http.ResponseWriter) {
-	log.Error("Invalid Request [400]")
-	res.WriteHeader(http.StatusBadRequest)
 }

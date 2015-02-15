@@ -3,16 +3,13 @@ package server
 import (
 	"net/http"
 	"bitbucket.org/thopet/timeserver/config"
-	"sync"
 	"time"
 	log "github.com/cihub/seelog"
 )
 
 var (
 	max int
-	cur int
 	featureOn bool
-	lock *sync.Mutex
 	// the number of booleans in this queue represents the number of requests
 	// which may run concurrently.
 	queue chan bool
@@ -45,14 +42,19 @@ func LimitRequests(h http.HandlerFunc) http.HandlerFunc {
 			h(res, req)
 			queue <- true
 		default:
-			error502(res, req)
+			Error502(res, req)
 		}
 	}
 
 
 }
 
-func error502(res http.ResponseWriter, req *http.Request) {
+func Error400(res http.ResponseWriter, req *http.Request) {
+	LogRequest(req, http.StatusBadRequest)
+	res.WriteHeader(http.StatusBadRequest)
+}
+
+func Error502(res http.ResponseWriter, req *http.Request) {
 	LogRequest(req, http.StatusServiceUnavailable)
 	res.WriteHeader(http.StatusServiceUnavailable)
 }
