@@ -16,12 +16,16 @@ func LoadFromDisk(filepath string) (*CMap, error) {
 		return nil, err
 	}
 
-	// load the bytes and unmarshal
+	/*
+		Creates a new cmap, then loads the file and unmarshals the json into
+		a map. The map is then loaded into the cmap and returned.
+	*/
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 	data := New()
+
 	mapData := make(map[string]string)
 	err = json.Unmarshal(bytes, &mapData)
 	data.values = mapData
@@ -57,6 +61,7 @@ func WriteToDisk(filepath string, data *CMap) error {
 
 func BackupAtInterval(data *CMap, filepath string, interval time.Duration) {
 	var err error
+	backupFilepath := filepath + ".bak"
 
 	// create the dumpefile if it doesn't exist.
 	err = WriteToDisk(filepath, data.Copy())
@@ -64,9 +69,7 @@ func BackupAtInterval(data *CMap, filepath string, interval time.Duration) {
 		panic(err)
 	}
 
-	backupFilepath := filepath + ".bak"
 	// set up ticker at interval.
-	log.Debugf("backup tick set to %v", interval)
 	ticker := time.Tick(interval)
 	var backup *CMap
 	for {

@@ -35,6 +35,7 @@ var (
 	// Flags related to simulating load.
 	AvgResponse int
 	Deviation int
+	RequestLimit int
 
 	//Flags related to saving the authserver map to disk
 	DumpFile string
@@ -44,7 +45,6 @@ var (
 	TemplatesDir string
 	LogConfigFile string
 
-	RequestLimit int
 )
 
 func init() {
@@ -57,7 +57,6 @@ func init() {
 }
 
 func initFlags() {
-	// parse the flags and return a dictionary of all read flags.
 	flag.IntVar(&Port, "port", DEFAULT_PORT, 
 		"port to launch webserver on, default is 8080")
 	flag.BoolVar(&VersionPrint, "V", false, 

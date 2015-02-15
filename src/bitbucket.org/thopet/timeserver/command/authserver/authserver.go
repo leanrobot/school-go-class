@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -7,7 +8,6 @@ import (
 	log "github.com/cihub/seelog"
 	"fmt"
 	"io"
-	"time"
 	cmap "bitbucket.org/thopet/timeserver/concurrentmap"
 )
 
@@ -27,6 +27,7 @@ func main() {
 
 	// if dumpfile is specified, load the dumpfile.
 	if config.DumpFile != "" {
+		log.Info("Loading from dumpfile...")
 		loadUsers, err := cmap.LoadFromDisk(config.DumpFile)
 		if err != nil {
 			// couldn't load the dumpfile, it must be corrupted or not exist.
@@ -45,8 +46,6 @@ func main() {
 		}
 	}
 
-	
-
 	// View Handler and patterns
 	vh := server.NewStrictHandler()
 	// TODO vh.NotFoundHandler
@@ -55,13 +54,9 @@ func main() {
 	vh.HandlePattern("/clear", clearName)
 
 	portString := fmt.Sprintf(":%d", config.AuthPort)
-	server := http.Server{
-		Addr:    portString,
-		Handler: vh,
-	}
 
 	log.Infof("authserver listening on port %d", config.AuthPort)
-	err := server.ListenAndServe()
+	err := http.ListenAndServe(portString, vh)
 
 	if err != nil {
 		log.Critical("authserver Failure: ", err)
@@ -71,7 +66,7 @@ func main() {
 }
 
 func getName(res http.ResponseWriter, req *http.Request) {
-	defer logRequest(req, http.StatusOK)
+	defer server.LogRequest(req, http.StatusOK)
 	uuid := req.FormValue(AUTH_KEY)
 	if len(uuid) > 0 { // valid request path, return 200 and username
 		name, ok := users.Get(uuid)
@@ -84,32 +79,24 @@ func getName(res http.ResponseWriter, req *http.Request) {
 }
 
 func setName(res http.ResponseWriter, req *http.Request) {
-	defer logRequest(req, http.StatusOK)
+	defer server.LogRequest(req, http.StatusOK)
 	uuid := req.FormValue(AUTH_KEY)
 	name := req.FormValue(NAME_KEY)
 	if len(name) > 0 && len(uuid) > 0 { // valid request path, return 200
 		users.Set(uuid, name)
 	} else { // non-valid request, return 400
-		res.WriteHeader(http.StatusBadRequest)
+		error400(res)
 	}
 }
 
 func clearName(res http.ResponseWriter, req *http.Request) {
-	defer logRequest(req, http.StatusOK)
+	defer server.LogRequest(req, http.StatusOK)
 	uuid := req.FormValue("uuid")
 	if len(uuid) > 0 {
 		users.Del(uuid)
 	} else { // non-valid request, return 400
 		error400(res)
 	}
-}
-
-func logRequest(req *http.Request, statusCode int) {
-	var requestTime string = time.Now().Format(time.RFC1123Z)
-
-	fmt.Printf(`%s - [%s] "%s %s %s" %d -`+"\n",
-		req.Host, requestTime, req.Method, req.URL.String(), req.Proto,
-		statusCode)
 }
 
 func error400(res http.ResponseWriter) {
