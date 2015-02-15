@@ -24,6 +24,29 @@ func main() {
 	// initialize the concurrent map.
 	users = cmap.New()
 
+
+	// if dumpfile is specified, load the dumpfile.
+	if config.DumpFile != "" {
+		loadUsers, err := cmap.LoadFromDisk(config.DumpFile)
+		if err != nil {
+			// couldn't load the dumpfile, it must be corrupted or not exist.
+			// write over it with the empty map.
+			err = cmap.WriteToDisk(config.DumpFile, users)
+			if err != nil {
+				// well i dunno what to do here. panic!!!
+				panic(err)
+			}
+		}
+		users = loadUsers
+
+		if(config.CheckpointInterval != config.DEFAULT_CHECKPOINT_INTERVAL) {
+			// if checkpoint interval is specified, setup backup process.
+			go cmap.BackupAtInterval(users, config.DumpFile, config.CheckpointInterval)
+		}
+	}
+
+	
+
 	// View Handler and patterns
 	vh := server.NewStrictHandler()
 	// TODO vh.NotFoundHandler

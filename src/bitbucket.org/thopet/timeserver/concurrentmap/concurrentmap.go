@@ -37,3 +37,29 @@ func (cm *CMap) Del(key string) {
 
 	delete(cm.values, key)
 }
+
+func (cm *CMap) Copy() *CMap {
+	cm.lock.Lock()
+	defer cm.lock.Unlock()
+
+	copy := New()
+	for key, value := range cm.values {
+		copy.values[key] = value
+	}
+	return copy
+}
+
+// TODO
+func (cm *CMap) Equals(other *CMap) bool {
+	for key, _ := range other.values {
+		if _, exists := cm.values[key]; !exists {
+			return false
+		}
+	}
+	for key, _ := range cm.values {
+		if _, exists := other.values[key]; !exists {
+			return false
+		}
+	}
+	return true
+}

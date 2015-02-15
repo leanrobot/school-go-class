@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 	log "github.com/cihub/seelog"
-
 )
 
 const (
@@ -81,9 +80,10 @@ func initFlags() {
 		average response.`)
 
 	//Flags related to saving the authserver map to disk
-	flag.StringVar(&DumpFile, "dumpfile", "dumpfile.json", 
+	flag.StringVar(&DumpFile, "dumpfile", "", 
 		`The location of the dumpfile for user data.`)
-	//flag.DurationVar(&CheckpointInterval, )
+	flag.DurationVar(&CheckpointInterval, "checkpoint-interval", -1 * time.Second,
+		"Performs a save to dumpfile every checkpoint-interval.")
 
 	//Flags for request limiting
 	flag.IntVar(&RequestLimit, "max-inflight", 0,
