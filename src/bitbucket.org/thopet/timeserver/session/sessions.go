@@ -1,14 +1,14 @@
 package session
 
 import (
-	"bitbucket.org/thopet/timeserver/netauth"
-	"bitbucket.org/thopet/timeserver/cookie"
 	"bitbucket.org/thopet/timeserver/config"
-	"net/http"
+	"bitbucket.org/thopet/timeserver/cookie"
+	"bitbucket.org/thopet/timeserver/netauth"
 	"crypto/md5"
-	"io"
-	"time"
 	"fmt"
+	"io"
+	"net/http"
+	"time"
 )
 
 var (

@@ -2,11 +2,11 @@ package concurrentmap
 
 import (
 	"encoding/json"
-	"os"
-	"io/ioutil"
-	log "github.com/cihub/seelog"
-	"time"
 	"fmt"
+	log "github.com/cihub/seelog"
+	"io/ioutil"
+	"os"
+	"time"
 )
 
 func LoadFromDisk(filepath string) (*CMap, error) {
@@ -73,7 +73,7 @@ func BackupAtInterval(data *CMap, filepath string, interval time.Duration) {
 	ticker := time.Tick(interval)
 	var backup *CMap
 	for {
-		<- ticker
+		<-ticker
 		log.Info("Saving Dumpfile to disk...")
 		// copy into backup
 		backup = data.Copy()
@@ -98,7 +98,7 @@ func BackupAtInterval(data *CMap, filepath string, interval time.Duration) {
 		}
 
 		// if the back up was unsuccesful, restore the old bak file.
-		if(!backup.Equals(fileData)) {
+		if !backup.Equals(fileData) {
 			log.Info("Backup Unsuccessful, restoring old version of backup.")
 			err = os.Remove(filepath)
 			err = os.Rename(backupFilepath, filepath)
@@ -117,10 +117,10 @@ func BackupAtInterval(data *CMap, filepath string, interval time.Duration) {
 
 // Exists reports whether the named file or directory exists.
 func exists(name string) bool {
-    if _, err := os.Stat(name); err != nil {
-    if os.IsNotExist(err) {
-                return false
-            }
-    }
-    return true
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
 }

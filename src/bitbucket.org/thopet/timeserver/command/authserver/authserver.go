@@ -1,14 +1,13 @@
-
 package main
 
 import (
-	"bitbucket.org/thopet/timeserver/server"
-	"bitbucket.org/thopet/timeserver/config"
-	"net/http"
-	log "github.com/cihub/seelog"
-	"fmt"
-	"io"
 	cmap "bitbucket.org/thopet/timeserver/concurrentmap"
+	"bitbucket.org/thopet/timeserver/config"
+	"bitbucket.org/thopet/timeserver/server"
+	"fmt"
+	log "github.com/cihub/seelog"
+	"io"
+	"net/http"
 )
 
 const (
@@ -17,13 +16,12 @@ const (
 )
 
 var (
-	users *cmap.CMap 
+	users *cmap.CMap
 )
 
 func main() {
 	// initialize the concurrent map.
 	users = cmap.New()
-
 
 	// if dumpfile is specified, load the dumpfile.
 	if config.DumpFile != "" {
@@ -40,7 +38,7 @@ func main() {
 		}
 		users = loadUsers
 
-		if(config.CheckpointInterval != config.DEFAULT_CHECKPOINT_INTERVAL) {
+		if config.CheckpointInterval != config.DEFAULT_CHECKPOINT_INTERVAL {
 			// if checkpoint interval is specified, setup backup process.
 			go cmap.BackupAtInterval(users, config.DumpFile, config.CheckpointInterval)
 		}

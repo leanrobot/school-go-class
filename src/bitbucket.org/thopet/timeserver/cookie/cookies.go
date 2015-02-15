@@ -25,7 +25,7 @@ func Clear(res http.ResponseWriter, key string) {
 	http.SetCookie(res, cookie)
 }
 
-func newCookie(key string, value string) *http.Cookie{
+func newCookie(key string, value string) *http.Cookie {
 	cookie := http.Cookie{
 		Name:   key,
 		Path:   "/",

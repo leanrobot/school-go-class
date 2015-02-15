@@ -6,13 +6,13 @@ import (
 
 type CMap struct {
 	values map[string]string
-	lock  *sync.Mutex
+	lock   *sync.Mutex
 }
 
 func New() *CMap {
 	return &CMap{
 		values: make(map[string]string),
-		lock : new(sync.Mutex),
+		lock:   new(sync.Mutex),
 	}
 }
 

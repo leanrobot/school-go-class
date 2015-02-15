@@ -8,33 +8,21 @@ Winter 2015, CSS 490 - Tactical Software Engineering
 package main
 
 import (
-	"bitbucket.org/thopet/timeserver/server"
 	"bitbucket.org/thopet/timeserver/config"
+	"bitbucket.org/thopet/timeserver/server"
 	"bitbucket.org/thopet/timeserver/session"
-
 	"fmt"
 	log "github.com/cihub/seelog"
 	"html/template"
+	"math/rand"
 	"net/http"
 	"time"
-	"math/rand"
 )
 
 const (
 	TIME_LAYOUT          = "3:04:05 PM"
 	MILITARY_TIME_LAYOUT = "15:04:05"
 )
-
-/*
-TODO:
-	- BUG: login can happen during an existing login
-		causing an orphaned UUID in the data.
-	- /logout/
-		- BUG(assign2): client does not delete cookie (for some reason)
-			- Still is invalidated (so good).
-	- TODO(assign2): error handling for hash collision?
-*/
-
 
 var templates = map[string]*template.Template{
 	"index.html":       nil,
@@ -110,7 +98,9 @@ func loginHandler(res http.ResponseWriter, req *http.Request) {
 		renderBaseTemplate(res, "login_error.html", nil)
 	} else {
 		err := session.Create(res, username)
-		if err != nil { log.Error(err) }
+		if err != nil {
+			log.Error(err)
+		}
 		http.Redirect(res, req, "/index.html", http.StatusFound)
 	}
 }
@@ -133,12 +123,12 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 		MilitaryTime string
 		Username     string
 	}{
-		Time : time.Now().Local().Format(TIME_LAYOUT),
-		MilitaryTime : time.Now().UTC().Format(MILITARY_TIME_LAYOUT),
+		Time:         time.Now().Local().Format(TIME_LAYOUT),
+		MilitaryTime: time.Now().UTC().Format(MILITARY_TIME_LAYOUT),
 	}
 
 	// TODO implement random load simulation
-	wait := rand.NormFloat64() * float64(config.Deviation) +
+	wait := rand.NormFloat64()*float64(config.Deviation) +
 		float64(config.AvgResponse)
 	if wait < 0 {
 		wait = 0

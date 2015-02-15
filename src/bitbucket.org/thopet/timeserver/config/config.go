@@ -3,21 +3,21 @@ package config
 import (
 	"flag"
 	"fmt"
+	log "github.com/cihub/seelog"
 	"os"
 	"time"
-	log "github.com/cihub/seelog"
 )
 
 const (
 	VERSION = "assignment-03.rc02"
 
-	DEFAULT_PORT = 8080
+	DEFAULT_PORT          = 8080
 	DEFAULT_LOG_FILE      = "etc/seelog.xml"
 	DEFAULT_TEMPLATES_DIR = "src/bitbucket.org/thopet/timeserver/templates"
 
 	DEFAULT_CHECKPOINT_INTERVAL = 10 * time.Second
-	DEFAULT_AVG_RESPONSE = 5000
-	DEFAULT_DEVIATION = 500
+	DEFAULT_AVG_RESPONSE        = 5000
+	DEFAULT_DEVIATION           = 500
 
 	SESSION_NAME = "timeserver_css490_tompetit"
 
@@ -30,21 +30,20 @@ var (
 
 	// Flags related to communicating with the authserver.
 	AuthPort int
-	AuthUrl string
+	AuthUrl  string
 
 	// Flags related to simulating load.
-	AvgResponse int
-	Deviation int
+	AvgResponse  int
+	Deviation    int
 	RequestLimit int
 
 	//Flags related to saving the authserver map to disk
-	DumpFile string
+	DumpFile           string
 	CheckpointInterval time.Duration
 
-	VersionPrint bool
-	TemplatesDir string
+	VersionPrint  bool
+	TemplatesDir  string
 	LogConfigFile string
-
 )
 
 func init() {
@@ -57,17 +56,17 @@ func init() {
 }
 
 func initFlags() {
-	flag.IntVar(&Port, "port", DEFAULT_PORT, 
+	flag.IntVar(&Port, "port", DEFAULT_PORT,
 		"port to launch webserver on, default is 8080")
-	flag.BoolVar(&VersionPrint, "V", false, 
+	flag.BoolVar(&VersionPrint, "V", false,
 		"Display version information")
 	flag.StringVar(&TemplatesDir, "templates", DEFAULT_TEMPLATES_DIR,
 		"the location of site templates")
-	flag.StringVar(&LogConfigFile, "log", DEFAULT_LOG_FILE, 
+	flag.StringVar(&LogConfigFile, "log", DEFAULT_LOG_FILE,
 		"the location of the seelog configuration file")
-	flag.StringVar(&AuthUrl, "authhost", "localhost", 
+	flag.StringVar(&AuthUrl, "authhost", "localhost",
 		"The network address for the auth server")
-	flag.IntVar(&AuthPort, "authport", 9090, 
+	flag.IntVar(&AuthPort, "authport", 9090,
 		"The port which to connect to the authserver on.")
 
 	// Flags related to simulating load.
@@ -79,9 +78,9 @@ func initFlags() {
 		average response.`)
 
 	//Flags related to saving the authserver map to disk
-	flag.StringVar(&DumpFile, "dumpfile", "", 
+	flag.StringVar(&DumpFile, "dumpfile", "",
 		`The location of the dumpfile for user data.`)
-	flag.DurationVar(&CheckpointInterval, "checkpoint-interval", -1 * time.Second,
+	flag.DurationVar(&CheckpointInterval, "checkpoint-interval", -1*time.Second,
 		"Performs a save to dumpfile every checkpoint-interval.")
 
 	//Flags for request limiting

@@ -1,14 +1,14 @@
 package server
 
 import (
-	"net/http"
 	"bitbucket.org/thopet/timeserver/config"
-	"time"
 	log "github.com/cihub/seelog"
+	"net/http"
+	"time"
 )
 
 var (
-	max int
+	max       int
 	featureOn bool
 	// the number of booleans in this queue represents the number of requests
 	// which may run concurrently.
@@ -25,7 +25,7 @@ func init() {
 	}
 
 	queue = make(chan bool, max)
-	for i:=0; i<max; i++ {
+	for i := 0; i < max; i++ {
 		queue <- true
 	}
 }
@@ -38,14 +38,13 @@ func LimitRequests(h http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		queue := queue
 		select {
-		case <- queue:
+		case <-queue:
 			h(res, req)
 			queue <- true
 		default:
 			Error502(res, req)
 		}
 	}
-
 
 }
 

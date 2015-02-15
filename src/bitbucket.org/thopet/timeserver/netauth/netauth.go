@@ -1,13 +1,13 @@
 package netauth
 
 import (
-	"fmt"
 	"bitbucket.org/thopet/timeserver/config"
-	"net/http"
+	"errors"
+	"fmt"
+	log "github.com/cihub/seelog"
 	"io"
 	"io/ioutil"
-	log "github.com/cihub/seelog"
-	"errors"
+	"net/http"
 )
 
 var (
@@ -19,10 +19,10 @@ func init() {
 	log.Debug(httpAuthUrl)
 
 	// test that the authserver is running.
-	statusUrl := fmt.Sprintf(httpAuthUrl+"/status")
+	statusUrl := fmt.Sprintf(httpAuthUrl + "/status")
 	// causes a panic if communication cannot be established with the
 	// authserver.
-	get200(statusUrl) 
+	get200(statusUrl)
 }
 
 func Name(uuid string) (string, error) {
@@ -39,7 +39,7 @@ func Name(uuid string) (string, error) {
 func SetName(uuid string, name string) error {
 	url := fmt.Sprintf("%s/set?cookie=%s&name=%s",
 		httpAuthUrl, uuid, name)
-	
+
 	_, err := get200(url)
 	if err != nil {
 		return err
