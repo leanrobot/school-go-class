@@ -59,13 +59,13 @@ func (cm *CMap) Copy() *CMap {
 func (cm *CMap) Equals(other *CMap) bool {
 	for key, otherValue := range other.values {
 		value, exists := cm.values[key]
-		if !exists || value != otherValue  {
+		if !exists || value != otherValue {
 			return false
 		}
 	}
 	for key, value := range cm.values {
 		otherValue, exists := other.values[key]
-		if !exists || value != otherValue  {
+		if !exists || value != otherValue {
 			return false
 		}
 	}

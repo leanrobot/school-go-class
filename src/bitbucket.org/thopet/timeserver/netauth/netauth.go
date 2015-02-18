@@ -7,14 +7,14 @@ import (
 	log "github.com/cihub/seelog"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"net"
+	"net/http"
 	"time"
 )
 
 var (
 	httpAuthUrl string
-	client http.Client
+	client      http.Client
 )
 
 func init() {
@@ -22,16 +22,16 @@ func init() {
 	log.Debug(httpAuthUrl)
 
 	// setup the timeout transport for get200
-	
+
 	transport := http.Transport{
-        Dial: func (network, addr string) (net.Conn, error) {
-	    	      return net.DialTimeout(network, addr, 
-	    	      	time.Duration(config.AuthTimeout) * time.Millisecond)
-			  },
-    }
-    client = http.Client{
-        Transport: &transport,
-    }
+		Dial: func(network, addr string) (net.Conn, error) {
+			return net.DialTimeout(network, addr,
+				time.Duration(config.AuthTimeout)*time.Millisecond)
+		},
+	}
+	client = http.Client{
+		Transport: &transport,
+	}
 
 	// test that the authserver is running.
 	statusUrl := fmt.Sprintf(httpAuthUrl + "/status")

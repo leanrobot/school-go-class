@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	VERSION = "assignment-03.rc02"
+	VERSION = "assignment-04.rc01"
 
 	DEFAULT_PORT          = 8080
 	DEFAULT_LOG_FILE      = "etc/seelog.xml"
@@ -17,7 +17,7 @@ const (
 	DEFAULT_CHECKPOINT_INTERVAL = 10
 	DEFAULT_AVG_RESPONSE        = 5000
 	DEFAULT_DEVIATION           = 500
-	DEFAULT_AUTH_TIMEOUT		= 1000
+	DEFAULT_AUTH_TIMEOUT        = 1000
 
 	SESSION_NAME = "timeserver_css490_tompetit"
 
