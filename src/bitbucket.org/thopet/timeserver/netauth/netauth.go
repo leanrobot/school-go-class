@@ -48,6 +48,9 @@ func Name(uuid string) (string, error) {
 		return "", err
 	}
 	name := getBodyAsString(resp.Body)
+	if len(name) < 1 {
+		return "", errors.New("No name returned")
+	}
 	return name, nil
 }
 

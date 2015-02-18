@@ -71,11 +71,9 @@ func getName(res http.ResponseWriter, req *http.Request) {
 	defer server.LogRequest(req, http.StatusOK)
 	uuid := req.FormValue(AUTH_KEY)
 	if len(uuid) > 0 { // valid request path, return 200 and username
-		name, ok := users.Get(uuid)
-		if ok {
-			io.WriteString(res, name)
-			return
-		}
+		name, _ := users.Get(uuid)
+		io.WriteString(res, name)
+		return
 	}
 	server.Error400(res, req)
 }
