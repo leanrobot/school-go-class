@@ -56,7 +56,6 @@ func (cm *CMap) Copy() *CMap {
 	return copy
 }
 
-// TODO
 func (cm *CMap) Equals(other *CMap) bool {
 	for key, otherValue := range other.values {
 		value, exists := cm.values[key]

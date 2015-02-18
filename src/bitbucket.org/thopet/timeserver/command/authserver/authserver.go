@@ -36,6 +36,7 @@ func main() {
 				// well i dunno what to do here. panic!!!
 				panic(err)
 			}
+			loadUsers, _ = cmap.LoadFromDisk(config.DumpFile)
 		}
 		users = loadUsers
 
