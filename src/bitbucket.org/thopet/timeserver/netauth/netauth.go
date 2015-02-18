@@ -8,15 +8,30 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net"
+	"time"
 )
 
 var (
 	httpAuthUrl string
+	client http.Client
 )
 
 func init() {
 	httpAuthUrl = fmt.Sprintf("http://%s:%d", config.AuthUrl, config.AuthPort)
 	log.Debug(httpAuthUrl)
+
+	// setup the timeout transport for get200
+	
+	transport := http.Transport{
+        Dial: func (network, addr string) (net.Conn, error) {
+	    	      return net.DialTimeout(network, addr, 
+	    	      	time.Duration(config.AuthTimeout) * time.Millisecond)
+			  },
+    }
+    client = http.Client{
+        Transport: &transport,
+    }
 
 	// test that the authserver is running.
 	statusUrl := fmt.Sprintf(httpAuthUrl + "/status")
@@ -61,7 +76,7 @@ func ClearName(uuid string) error {
 func get200(url string) (res *http.Response, err error) {
 	log.Debugf("making request to: %s", url)
 
-	resp, err := http.Get(url)
+	resp, err := client.Get(url)
 	if err != nil {
 		panic(err)
 	}

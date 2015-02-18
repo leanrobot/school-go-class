@@ -17,6 +17,7 @@ const (
 	DEFAULT_CHECKPOINT_INTERVAL = 10
 	DEFAULT_AVG_RESPONSE        = 5000
 	DEFAULT_DEVIATION           = 500
+	DEFAULT_AUTH_TIMEOUT		= 1000
 
 	SESSION_NAME = "timeserver_css490_tompetit"
 
@@ -43,6 +44,8 @@ var (
 	VersionPrint  bool
 	TemplatesDir  string
 	LogConfigFile string
+
+	AuthTimeout int
 )
 
 func init() {
@@ -75,6 +78,10 @@ func initFlags() {
 	flag.IntVar(&Deviation, "deviation-ms", DEFAULT_DEVIATION,
 		`The value of one unit of standard deviation from the
 		average response.`)
+
+	// Timeout
+	flag.IntVar(&AuthTimeout, "auth-timeout-ms", DEFAULT_AUTH_TIMEOUT,
+		"The timeout in milliseconds when timeserver talks to the authserver.")
 
 	//Flags related to saving the authserver map to disk
 	flag.StringVar(&DumpFile, "dumpfile", "",
