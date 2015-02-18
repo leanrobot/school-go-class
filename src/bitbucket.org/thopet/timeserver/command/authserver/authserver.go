@@ -8,6 +8,7 @@ import (
 	log "github.com/cihub/seelog"
 	"io"
 	"net/http"
+	"time"
 )
 
 const (
@@ -40,7 +41,8 @@ func main() {
 
 		if config.CheckpointInterval != config.DEFAULT_CHECKPOINT_INTERVAL {
 			// if checkpoint interval is specified, setup backup process.
-			go cmap.BackupAtInterval(users, config.DumpFile, config.CheckpointInterval)
+			go cmap.BackupAtInterval(users, config.DumpFile,
+				time.Duration(config.CheckpointInterval)*time.Millisecond)
 		}
 	}
 
@@ -63,6 +65,7 @@ func main() {
 	log.Info("authserver exiting..")
 }
 
+// View for /get
 func getName(res http.ResponseWriter, req *http.Request) {
 	defer server.LogRequest(req, http.StatusOK)
 	uuid := req.FormValue(AUTH_KEY)
@@ -76,6 +79,7 @@ func getName(res http.ResponseWriter, req *http.Request) {
 	server.Error400(res, req)
 }
 
+// View for /set
 func setName(res http.ResponseWriter, req *http.Request) {
 	defer server.LogRequest(req, http.StatusOK)
 	uuid := req.FormValue(AUTH_KEY)
@@ -87,6 +91,7 @@ func setName(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// View for /clear
 func clearName(res http.ResponseWriter, req *http.Request) {
 	defer server.LogRequest(req, http.StatusOK)
 	uuid := req.FormValue("uuid")

@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+/*
+LoadFromDisk receives a filepath and attempts to load it into a new CMap that
+it returns.
+*/
 func LoadFromDisk(filepath string) (*CMap, error) {
 	// get a file object.
 	file, err := os.Open(filepath)

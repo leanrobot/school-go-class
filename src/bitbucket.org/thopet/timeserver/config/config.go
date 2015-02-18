@@ -5,7 +5,6 @@ import (
 	"fmt"
 	log "github.com/cihub/seelog"
 	"os"
-	"time"
 )
 
 const (
@@ -15,7 +14,7 @@ const (
 	DEFAULT_LOG_FILE      = "etc/seelog.xml"
 	DEFAULT_TEMPLATES_DIR = "src/bitbucket.org/thopet/timeserver/templates"
 
-	DEFAULT_CHECKPOINT_INTERVAL = 10 * time.Second
+	DEFAULT_CHECKPOINT_INTERVAL = 10
 	DEFAULT_AVG_RESPONSE        = 5000
 	DEFAULT_DEVIATION           = 500
 
@@ -39,7 +38,7 @@ var (
 
 	//Flags related to saving the authserver map to disk
 	DumpFile           string
-	CheckpointInterval time.Duration
+	CheckpointInterval int
 
 	VersionPrint  bool
 	TemplatesDir  string
@@ -80,7 +79,8 @@ func initFlags() {
 	//Flags related to saving the authserver map to disk
 	flag.StringVar(&DumpFile, "dumpfile", "",
 		`The location of the dumpfile for user data.`)
-	flag.DurationVar(&CheckpointInterval, "checkpoint-interval", -1*time.Second,
+	flag.IntVar(&CheckpointInterval, "checkpoint-interval-ms",
+		DEFAULT_CHECKPOINT_INTERVAL,
 		"Performs a save to dumpfile every checkpoint-interval.")
 
 	//Flags for request limiting

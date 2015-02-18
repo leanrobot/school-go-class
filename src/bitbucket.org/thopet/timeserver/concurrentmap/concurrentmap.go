@@ -9,6 +9,7 @@ type CMap struct {
 	lock   *sync.Mutex
 }
 
+// New creates a new CMap and returns a pointer.
 func New() *CMap {
 	return &CMap{
 		values: make(map[string]string),
@@ -16,6 +17,7 @@ func New() *CMap {
 	}
 }
 
+// Get retrieves values given a key. Safe for concurrent use.
 func (cm *CMap) Get(key string) (value string, ok bool) {
 	cm.lock.Lock()
 	defer cm.lock.Unlock()
@@ -24,6 +26,8 @@ func (cm *CMap) Get(key string) (value string, ok bool) {
 	return value, ok
 }
 
+// Set sets an appropriate key-value in the backing map. If the key already
+// exists it will be overridden.
 func (cm *CMap) Set(key string, value string) {
 	cm.lock.Lock()
 	defer cm.lock.Unlock()
@@ -31,6 +35,8 @@ func (cm *CMap) Set(key string, value string) {
 	cm.values[key] = value
 }
 
+// Delete removes a key-value from the map. If the key doesn't exist,
+// Delete is a no-op.
 func (cm *CMap) Del(key string) {
 	cm.lock.Lock()
 	defer cm.lock.Unlock()
@@ -38,6 +44,7 @@ func (cm *CMap) Del(key string) {
 	delete(cm.values, key)
 }
 
+// Creates a copy of the CMap and returns a pointer to the copy.
 func (cm *CMap) Copy() *CMap {
 	cm.lock.Lock()
 	defer cm.lock.Unlock()

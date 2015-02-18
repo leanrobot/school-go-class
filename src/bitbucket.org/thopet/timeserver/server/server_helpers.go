@@ -10,9 +10,9 @@ import (
 var (
 	max       int
 	featureOn bool
-	// the number of booleans in this queue represents the number of requests
-	// which may run concurrently.
-	queue chan bool
+	// A semaphore channel. When the channel is drained of bool's
+	// the semaphore is locked.
+	sem chan bool
 )
 
 func init() {
@@ -24,9 +24,9 @@ func init() {
 		log.Info("No Request Limit Enabled")
 	}
 
-	queue = make(chan bool, max)
+	sem = make(chan bool, max)
 	for i := 0; i < max; i++ {
-		queue <- true
+		sem <- true
 	}
 }
 
@@ -36,11 +36,11 @@ func LimitRequests(h http.HandlerFunc) http.HandlerFunc {
 		return h
 	}
 	return func(res http.ResponseWriter, req *http.Request) {
-		queue := queue
+		sem := sem
 		select {
-		case <-queue:
+		case <-sem:
 			h(res, req)
-			queue <- true
+			sem <- true
 		default:
 			Error502(res, req)
 		}
