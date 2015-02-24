@@ -5,9 +5,9 @@ import ()
 var (
 	counts    map[string]int
 	increment chan string
-	reset     chan int
+	reset     chan string
 	clear     chan bool
-	export    chan map[string]int
+	export    chan chan map[string]int
 )
 
 const DEF_CHAN_CAP = 10
@@ -15,16 +15,18 @@ const DEF_CHAN_CAP = 10
 func init() {
 	counts = make(map[string]int)
 	increment = make(chan string, DEF_CHAN_CAP)
-	reset = make(chan int, DEF_CHAN_CAP)
+	reset = make(chan string, DEF_CHAN_CAP)
 	clear = make(chan bool, DEF_CHAN_CAP)
 	export = make(chan chan map[string]int, DEF_CHAN_CAP)
+
+	go semaphore()
 }
 
 func Increment(key string) {
 	increment <- key
 }
 
-func Reset() {
+func Reset(key string) {
 	reset <- key
 }
 
@@ -32,8 +34,8 @@ func Clear() {
 	clear <- true
 }
 
-func Export() {
-	listener = make(chan map[string]int)
+func Export() map[string]int {
+	listener := make(chan map[string]int)
 	export <- listener
 	return <-listener
 }
@@ -45,7 +47,7 @@ func semaphore() {
 			counts[key]++
 		case key := <-reset:
 			counts[key] = 0
-		case key := <-clear:
+		case <-clear:
 			clearData()
 		case exportChan := <-export:
 			exportChan <- copy()
@@ -60,9 +62,9 @@ func clearData() {
 }
 
 func copy() map[string]int {
-	copy := new(map[string]int)
+	dataCopy := make(map[string]int)
 	for key, value := range counts {
-		copy[key] = value
+		dataCopy[key] = value
 	}
-	return copy
+	return dataCopy
 }
