@@ -1,11 +1,11 @@
 package session
 
 import (
-	"bitbucket.org/thopet/timeserver/config"
-	"bitbucket.org/thopet/timeserver/cookie"
-	"bitbucket.org/thopet/timeserver/netauth"
 	"crypto/md5"
 	"fmt"
+	"github.com/leanrobot/timeserver/config"
+	"github.com/leanrobot/timeserver/cookie"
+	"github.com/leanrobot/timeserver/netauth"
 	"io"
 	"net/http"
 	"time"

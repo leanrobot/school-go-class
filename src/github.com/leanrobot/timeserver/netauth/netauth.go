@@ -1,10 +1,10 @@
 package netauth
 
 import (
-	"bitbucket.org/thopet/timeserver/config"
 	"errors"
 	"fmt"
 	log "github.com/cihub/seelog"
+	"github.com/leanrobot/timeserver/config"
 	"io"
 	"io/ioutil"
 	"net"

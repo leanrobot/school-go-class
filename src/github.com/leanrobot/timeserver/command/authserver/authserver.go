@@ -1,11 +1,11 @@
 package main
 
 import (
-	cmap "bitbucket.org/thopet/timeserver/concurrentmap"
-	"bitbucket.org/thopet/timeserver/config"
-	"bitbucket.org/thopet/timeserver/server"
 	"fmt"
 	log "github.com/cihub/seelog"
+	cmap "github.com/leanrobot/timeserver/concurrentmap"
+	"github.com/leanrobot/timeserver/config"
+	"github.com/leanrobot/timeserver/server"
 	"io"
 	"net/http"
 	"time"

@@ -1,8 +1,8 @@
 package server
 
 import (
-	"bitbucket.org/thopet/timeserver/config"
 	log "github.com/cihub/seelog"
+	"github.com/leanrobot/timeserver/config"
 	"net/http"
 	"time"
 )

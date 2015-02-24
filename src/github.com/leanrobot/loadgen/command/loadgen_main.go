@@ -2,6 +2,7 @@ package loadgen
 
 import (
 	"flag"
+	"github.com/leanrobot/loadgen/counter"
 )
 
 type Config struct {
@@ -40,4 +41,19 @@ func initConfig() *Config {
 
 func main() {
 	initConfig()
+
+	// run the launcher process.
+	go launcher()
+	time.Sleep(config.Runtime)
+
+	// report the statistics
+
+}
+
+func launcher() {
+
+}
+
+func worker() {
+
 }

@@ -8,11 +8,11 @@ Winter 2015, CSS 490 - Tactical Software Engineering
 package main
 
 import (
-	"bitbucket.org/thopet/timeserver/config"
-	"bitbucket.org/thopet/timeserver/server"
-	"bitbucket.org/thopet/timeserver/session"
 	"fmt"
 	log "github.com/cihub/seelog"
+	"github.com/leanrobot/timeserver/config"
+	"github.com/leanrobot/timeserver/server"
+	"github.com/leanrobot/timeserver/session"
 	"html/template"
 	"math/rand"
 	"net/http"

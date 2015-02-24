@@ -12,7 +12,7 @@ const (
 
 	DEFAULT_PORT          = 8080
 	DEFAULT_LOG_FILE      = "etc/seelog.xml"
-	DEFAULT_TEMPLATES_DIR = "src/bitbucket.org/thopet/timeserver/templates"
+	DEFAULT_TEMPLATES_DIR = "src/github.com/leanrobot/timeserver/templates"
 
 	DEFAULT_CHECKPOINT_INTERVAL = 10
 	DEFAULT_AVG_RESPONSE        = 5000
