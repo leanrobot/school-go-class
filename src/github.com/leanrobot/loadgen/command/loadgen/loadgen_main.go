@@ -14,6 +14,7 @@ TODO
 - count the errors
 - wait an additional timeout after finishing main loop to make sure
 		that requests have finished.
+- count timeouts as errors.
 */
 
 var (
@@ -68,17 +69,12 @@ func main() {
 
 	// report the statistics
 	stats := counter.Export()
-	keys := []int{
-		100, 200, 300, 400, 500,
+	keys := []string{
+		"total", "100s", "200s", "300s", "400s", "500s", "errors",
 	}
 
 	for _, key := range keys {
-		fmt.Printf("%ds\t\t\t%d\n", key, stats[string(key)])
-	}
-
-	fmt.Println("actualy map:")
-	for key, value := range stats {
-		fmt.Printf("%s\t\t\t%d\n", key, value)
+		fmt.Printf("%s:\t%d\n", key, stats[key])
 	}
 
 }
@@ -98,12 +94,14 @@ func launcher() {
 func worker() {
 	resp, err := client.Get(Url)
 	if err != nil {
-		panic(err)
+		counter.Increment("error")
 	}
 
-	// get the status code
-	status := resp.StatusCode
-	statusKey := fmt.Sprintf("%d", status)
+	counter.Increment("total")
+
+	// get the status code by century.
+	status := (resp.StatusCode / 100) * 100
+	statusKey := fmt.Sprintf("%ds", status)
 
 	// increment the status variable.
 	counter.Increment(statusKey)
