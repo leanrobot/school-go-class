@@ -1,17 +1,13 @@
 Simple Time Server. Written by Tom Petit.
 Winter 2015, CSS 490 - Tactical Software Engineering
 
-version: assignment-04.rc02
+version: assignment-05.rc01
 
 RECOMENDED OPTIONS =============================================================
 
-Authserver:
-
-bin/authserver --dumpfile /tmp/dumpfile-petit.json --checkpoint-interval-ms 10000
-
-Timeserver: 
-
-bin/timeserver --max-inflight 5 --avg-response-ms 1500 --deviation-ms 1000
+./bin/authserver --log=etc/authserver_seelog.xml &
+./bin/timeserver --port=8080 --max-inflight=80 --avg-response-ms=500   --deviation-ms=300 &
+./bin/loadgen --url='http://localhost:8080/time' --runtime=10s --rate=200 --burst=20 --timeout=1000ms
 
 Usage of bin/timeserver ========================================================
   -V=false: Display version information

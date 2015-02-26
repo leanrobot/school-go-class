@@ -1,0 +1,43 @@
+TEST 1
+
+./bin/authserver --log=etc/authserver_seelog.xml &
+./bin/timeserver --port=8080 --max-inflight=80 --avg-response-ms=500   --deviation-ms=300 &
+./bin/loadgen --url='http://localhost:8080/time' --runtime=10s --rate=200 --burst=20 --timeout=1000ms
+
+total:	1980
+100s:	0
+200s:	1379
+300s:	0
+400s:	0
+500s:	524
+error:	77
+
+================================================================================
+TEST 2
+
+./bin/authserver --log=etc/authserver_seelog.xml &
+./bin/timeserver --port=8080 --max-inflight=200 --avg-response-ms=300   --deviation-ms=500 &
+./bin/loadgen --url='http://localhost:8080/time' --runtime=10s --rate=200 --burst=20 --timeout=1000ms
+
+total:	2000
+100s:	0
+200s:	1356
+300s:	0
+400s:	0
+500s:	575
+error:	69
+
+================================================================================
+TEST 3
+
+./bin/authserver --log=etc/authserver_seelog.xml &
+./bin/timeserver --port=8080 --max-inflight=200 --avg-response-ms=300   --deviation-ms=500 &
+./bin/loadgen --url='http://localhost:8080/time' --runtime=10s --rate=2000 --burst=1000 --timeout=1000ms
+
+total:	18993
+100s:	0
+200s:	922
+300s:	0
+400s:	0
+500s:	15081
+error:	2868

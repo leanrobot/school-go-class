@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	VERSION = "assignment-04.rc01"
+	VERSION = "assignment-05.rc01"
 
 	DEFAULT_PORT          = 8080
 	DEFAULT_LOG_FILE      = "etc/timeserver_seelog.xml"
