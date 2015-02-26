@@ -4,18 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/leanrobot/loadgen/counter"
-	"net"
 	"net/http"
 	"time"
 )
-
-/*
-TODO
-- count the errors
-- wait an additional timeout after finishing main loop to make sure
-		that requests have finished.
-- count timeouts as errors.
-*/
 
 var (
 	Rate    int
@@ -35,7 +26,7 @@ const (
 	DEFAULT_URL     string        = "http://localhost:8080/time"
 )
 
-func initConfig() {
+func initFlags() {
 	flag.IntVar(&Rate, "rate", DEFAULT_RATE,
 		"the number of requests to send per second")
 	flag.IntVar(&Burst, "burst", DEFAULT_BURST,
@@ -49,55 +40,74 @@ func initConfig() {
 	flag.Parse()
 }
 
-func main() {
-	initConfig()
-
-	// setup a client with the timeout.
-	transport := http.Transport{
-		Dial: func(network, addr string) (net.Conn, error) {
-			return net.DialTimeout(network, addr,
-				time.Duration(Timeout)*time.Millisecond)
-		},
-	}
+func initClient() {
 	client = http.Client{
-		Transport: &transport,
+		Timeout: Timeout,
 	}
+}
+
+func main() {
+	initFlags()
+	// setup a client with the timeout.
+	initClient()
 
 	// run the launcher process.
-	go launcher()
+	controller := make(chan bool)
+	go launcher(controller)
 	time.Sleep(Runtime)
+
+	// kill the launcher and wait for requests to timeout.
+	controller <- true
+	time.Sleep(Timeout * 2)
 
 	// report the statistics
 	stats := counter.Export()
 	keys := []string{
-		"total", "100s", "200s", "300s", "400s", "500s", "errors",
+		"total", "100s", "200s", "300s", "400s", "500s", "error",
 	}
 
 	for _, key := range keys {
 		fmt.Printf("%s:\t%d\n", key, stats[key])
 	}
-
 }
 
-func launcher() {
+// launcher is a goroutine which launches the requests off to the remote page
+// that is being tested. the controller channel is used to terminate this
+// routine. when anything is received on this channel, the launcher closes the
+// channel and terminates itself.
+func launcher(controller chan bool) {
 	interval := time.Duration(Burst*1000000/Rate) * time.Microsecond
 	ticker := time.Tick(interval)
 
 	for {
-		<-ticker
+		select {
+		case <-ticker:
+			break
+		case <-controller:
+			close(controller)
+			return
+		}
+
 		for i := 0; i < Burst; i++ {
 			go worker()
 		}
 	}
 }
 
+/*
+worker is a simple goroutine which makes a request to a remote page. it then
+takes the status code from the response and counts them up by century using
+the counter.
+*/
 func worker() {
+	counter.Increment("total")
+
 	resp, err := client.Get(Url)
 	if err != nil {
 		counter.Increment("error")
+		return
 	}
-
-	counter.Increment("total")
+	defer resp.Body.Close()
 
 	// get the status code by century.
 	status := (resp.StatusCode / 100) * 100

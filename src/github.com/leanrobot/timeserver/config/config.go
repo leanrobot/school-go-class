@@ -11,7 +11,7 @@ const (
 	VERSION = "assignment-04.rc01"
 
 	DEFAULT_PORT          = 8080
-	DEFAULT_LOG_FILE      = "etc/seelog.xml"
+	DEFAULT_LOG_FILE      = "etc/timeserver_seelog.xml"
 	DEFAULT_TEMPLATES_DIR = "src/github.com/leanrobot/timeserver/templates"
 
 	DEFAULT_CHECKPOINT_INTERVAL = 10

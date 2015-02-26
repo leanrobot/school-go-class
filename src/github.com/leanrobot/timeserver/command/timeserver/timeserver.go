@@ -128,13 +128,13 @@ func timeHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// TODO implement random load simulation
-	wait := rand.NormFloat64()*float64(config.Deviation) +
-		float64(config.AvgResponse)
+	wait := int(rand.NormFloat64()*float64(config.Deviation) +
+		float64(config.AvgResponse))
 	if wait < 0 {
 		wait = 0
 	}
-	log.Infof("sleep duration is %d", wait)
 	time.Sleep(time.Duration(wait) * time.Millisecond)
+	log.Infof("sleep duration is %d", wait)
 
 	if username, err := session.Username(req); err == nil {
 		data.Username = username
