@@ -5,70 +5,106 @@ that can be used across a distributed application to keep track of statistics.
 */
 package counter
 
-var (
-	counts    map[string]int
-	increment chan string
-	reset     chan string
-	clear     chan bool
-	export    chan chan map[string]int
+import (
+	"fmt"
 )
 
-const DEF_CHAN_CAP = 10
+var (
+	commands chan *Action
+	counts   map[string]int
+)
+
+type Action struct {
+	key           string
+	action        Command
+	valueReceiver chan int
+	copyReceiver  chan map[string]int
+}
+
+type Command int
+
+const (
+	getCmd = iota
+	incrementCmd
+	resetCmd
+	exportCmd
+	clearCmd
+)
+
+const DEF_CHAN_CAP = 1000
 
 func init() {
+	commands = make(chan *Action, DEF_CHAN_CAP)
 	counts = make(map[string]int)
-	increment = make(chan string, DEF_CHAN_CAP)
-	reset = make(chan string, DEF_CHAN_CAP)
-	clear = make(chan bool, DEF_CHAN_CAP)
-	export = make(chan chan map[string]int, DEF_CHAN_CAP)
-
 	go semaphore()
+
+	fmt.Println(getCmd)
+	fmt.Println(incrementCmd)
+	fmt.Println(resetCmd)
+	fmt.Println(exportCmd)
+	fmt.Println(clearCmd)
+
+}
+
+func newAction(key string, cmd Command) *Action {
+	return &Action{
+		key:           key,
+		action:        cmd,
+		valueReceiver: make(chan int),
+		copyReceiver:  make(chan map[string]int),
+	}
 }
 
 // Increment adds one to the value of the specified key.
 func Increment(key string) {
-	increment <- key
+	incr := newAction(key, incrementCmd)
+	commands <- incr
+}
+
+func Get(key string) int {
+	get := newAction(key, getCmd)
+	commands <- get
+	return <-get.valueReceiver
 }
 
 // Reset changes the value of the specified key to zero.
 func Reset(key string) {
-	reset <- key
+	reset := newAction(key, resetCmd)
+	commands <- reset
 }
 
 // Clear sets all data for every key to zero.
 func Clear() {
-	clear <- true
+	clear := newAction("", clearCmd)
+	commands <- clear
 }
 
 // Export returns a copy of the counter data map.
 func Export() map[string]int {
-	listener := make(chan map[string]int)
-	export <- listener
-	return <-listener
+	export := newAction("", exportCmd)
+	commands <- export
+	return <-export.copyReceiver
 }
 
 /*
 semphore is a goroutine who implements the access to the data store.
-A channel exists for every action that the counter supports. when data is
-received on the channel the action is performed on the datastore.
 */
 func semaphore() {
 	for {
-		select {
-		// increment a key
-		case key := <-increment:
-			counts[key]++
-		// reset a key
-		case key := <-reset:
-			counts[key] = 0
-		// clear all counter data
-		case <-clear:
+		cmd := <-commands
+		fmt.Printf("%v\n", cmd)
+
+		switch cmd.action {
+		case getCmd:
+			cmd.valueReceiver <- counts[cmd.key]
+		case incrementCmd:
+			counts[cmd.key]++
+		case resetCmd:
+			counts[cmd.key] = 0
+		case clearCmd:
 			clearData()
-		// more complicated, a channel is sent through export. copy retuns
-		// a copy of the data map, which is then returned through exportChan
-		// to the caller.
-		case exportChan := <-export:
-			exportChan <- copy()
+		case exportCmd:
+			cmd.copyReceiver <- copy()
 		}
 	}
 }
