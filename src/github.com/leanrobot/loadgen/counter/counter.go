@@ -6,7 +6,7 @@ that can be used across a distributed application to keep track of statistics.
 package counter
 
 import (
-	"fmt"
+// "fmt"
 )
 
 var (
@@ -37,13 +37,6 @@ func init() {
 	commands = make(chan *Action, DEF_CHAN_CAP)
 	counts = make(map[string]int)
 	go semaphore()
-
-	fmt.Println(getCmd)
-	fmt.Println(incrementCmd)
-	fmt.Println(resetCmd)
-	fmt.Println(exportCmd)
-	fmt.Println(clearCmd)
-
 }
 
 func newAction(key string, cmd Command) *Action {
@@ -92,7 +85,6 @@ semphore is a goroutine who implements the access to the data store.
 func semaphore() {
 	for {
 		cmd := <-commands
-		fmt.Printf("%v\n", cmd)
 
 		switch cmd.action {
 		case getCmd:
