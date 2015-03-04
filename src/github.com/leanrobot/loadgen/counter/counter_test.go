@@ -1,6 +1,7 @@
 package counter
 
 import (
+	"sync"
 	tst "testing"
 )
 
@@ -73,5 +74,83 @@ func TestReset(t *tst.T) {
 	}
 	if Get(key) != count {
 		t.Errorf("Reset incorrect. got %d, expected %d", count, Get(key))
+	}
+}
+
+// Professors Tests ====
+
+const (
+	// Symbolic constants to let the compiler find typos.
+	Zeus   = "zeus"
+	Hera   = "hera"
+	Ares   = "ares"
+	Athena = "athena"
+)
+
+func TestProfessor(t *tst.T) {
+	// Spawn off 4 concurrent threads and wait until they
+	// complete.
+	var wg sync.WaitGroup
+	wg.Add(4)
+	go func() {
+		Increment(Zeus)
+		Increment(Zeus)
+
+		Increment(Hera)
+		Increment(Hera)
+		Increment(Hera)
+
+		Increment(Athena)
+		wg.Done()
+	}()
+	go func() {
+		Increment(Zeus)
+		Increment(Zeus)
+
+		Increment(Hera)
+		Increment(Hera)
+
+		Increment(Ares)
+
+		wg.Done()
+	}()
+	go func() {
+		Increment(Zeus)
+		Increment(Zeus)
+		Increment(Zeus)
+		Increment(Zeus)
+
+		Increment(Hera)
+		Increment(Hera)
+		Increment(Hera)
+		Increment(Hera)
+
+		Increment(Ares)
+		Increment(Ares)
+
+		Increment(Athena)
+
+		wg.Done()
+	}()
+	go func() {
+		Increment(Hera)
+		Increment(Hera)
+		Increment(Hera)
+		wg.Done()
+	}()
+	// sync.WaitGroups: wait until all 4 threads report Done.
+	// See the documentation.
+	wg.Wait()
+
+	expected := map[string]int{
+		"zeus":   8,
+		"hera":   12,
+		"ares":   3,
+		"athena": 2,
+	}
+	for k, v := range expected {
+		if v != Get(k) {
+			t.Errorf("counter %s: expected %d, got %d", k, v, Get(k))
+		}
 	}
 }
