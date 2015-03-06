@@ -8,12 +8,15 @@ Winter 2015, CSS 490 - Tactical Software Engineering
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	log "github.com/cihub/seelog"
+	"github.com/leanrobot/counter"
 	"github.com/leanrobot/timeserver/config"
 	"github.com/leanrobot/timeserver/server"
 	"github.com/leanrobot/timeserver/session"
 	"html/template"
+	"io"
 	"math/rand"
 	"net/http"
 	"time"
@@ -49,6 +52,7 @@ func main() {
 	vh.HandlePattern("/login/", loginHandler)
 	vh.HandlePattern("/logout/", logoutHandler)
 	vh.HandlePattern("/about/", aboutHandler)
+	vh.HandlePattern("/monitor/", monitorHandler)
 	vh.ServeStaticFile("/css/style.css", config.TemplatesDir+"/style.css")
 
 	log.Infof("Timeserver listening on 0.0.0.0%s", portString)
@@ -156,6 +160,15 @@ func notFoundHandler(res http.ResponseWriter, req *http.Request) {
 
 	res.WriteHeader(http.StatusNotFound)
 	renderBaseTemplate(res, "404.html", nil)
+}
+
+func monitorHandler(res http.ResponseWriter, req *http.Request) {
+	data := counter.Export()
+	dataJson, err := json.Marshal(data)
+	if err != nil {
+		panic(err)
+	}
+	io.WriteString(res, string(dataJson))
 }
 
 func renderBaseTemplate(res http.ResponseWriter, templateName string, data interface{}) {

@@ -129,7 +129,7 @@ func requestData(target string) (map[string]int, error) {
 
 	// unmarshal the json
 	data := make(map[string]int)
-	err = json.Unmarshal(jsonStr, data)
+	err = json.Unmarshal(jsonStr, &data)
 	if err != nil {
 		return nil, err
 	}

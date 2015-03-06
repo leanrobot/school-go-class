@@ -1,7 +1,9 @@
 package server
 
 import (
+	"fmt"
 	log "github.com/cihub/seelog"
+	"github.com/leanrobot/counter"
 	"github.com/leanrobot/timeserver/config"
 	"net/http"
 	"time"
@@ -70,6 +72,12 @@ func Error502(res http.ResponseWriter, req *http.Request) {
 // Reference: https://httpd.apache.org/docs/1.3/logs.html#common
 func LogRequest(req *http.Request, statusCode int) {
 	var requestTime string = time.Now().Format(time.RFC1123Z)
+
+	// log the century of the status code
+	century := (statusCode / 100) * 100
+	if century == 200 || century == 400 {
+		counter.Increment(fmt.Sprintf("%ds", century))
+	}
 
 	log.Infof(`%s - [%s] "%s %s %s" %d -`,
 		req.Host, requestTime, req.Method, req.URL.String(), req.Proto,
