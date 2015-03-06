@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/leanrobot/loadgen/counter"
+	"github.com/leanrobot/counter"
 	"net/http"
 	"time"
 )
