@@ -102,5 +102,6 @@ func MonitorHandler(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+	res.Header().Set("Content-Type", "application/json")
 	res.Write(dataJson)
 }
