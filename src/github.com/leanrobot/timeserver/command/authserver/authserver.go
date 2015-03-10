@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	log "github.com/cihub/seelog"
+	"github.com/leanrobot/counter"
 	cmap "github.com/leanrobot/timeserver/concurrentmap"
 	"github.com/leanrobot/timeserver/config"
 	"github.com/leanrobot/timeserver/server"
@@ -53,6 +54,7 @@ func main() {
 	vh.HandlePattern("/get", getName)
 	vh.HandlePattern("/set", setName)
 	vh.HandlePattern("/clear", clearName)
+	vh.HandlePattern("/monitor", server.MonitorHandler)
 
 	portString := fmt.Sprintf(":%d", config.AuthPort)
 
@@ -69,18 +71,24 @@ func main() {
 // View for /get
 func getName(res http.ResponseWriter, req *http.Request) {
 	defer server.LogRequest(req, http.StatusOK)
+	counter.Increment("get-cookie")
+
 	uuid := req.FormValue(AUTH_KEY)
 	if len(uuid) > 0 { // valid request path, return 200 and username
 		name, _ := users.Get(uuid)
 		io.WriteString(res, name)
 		return
 	}
+
+	counter.Increment("no-cookie")
 	server.Error400(res, req)
 }
 
 // View for /set
 func setName(res http.ResponseWriter, req *http.Request) {
 	defer server.LogRequest(req, http.StatusOK)
+	counter.Increment("set-cookie")
+
 	uuid := req.FormValue(AUTH_KEY)
 	name := req.FormValue(NAME_KEY)
 	if len(name) > 0 && len(uuid) > 0 { // valid request path, return 200

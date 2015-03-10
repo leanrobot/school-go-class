@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	log "github.com/cihub/seelog"
 	"github.com/leanrobot/counter"
@@ -79,7 +80,27 @@ func LogRequest(req *http.Request, statusCode int) {
 		counter.Increment(fmt.Sprintf("%ds", century))
 	}
 
+	// log 404s
+	if statusCode == 404 {
+		counter.Increment(fmt.Sprintf("%ds", statusCode))
+	}
+
 	log.Infof(`%s - [%s] "%s %s %s" %d -`,
 		req.Host, requestTime, req.Method, req.URL.String(), req.Proto,
 		statusCode)
+}
+
+/*
+MonitorHandler is a http.HandlerFunc type which uses the counter package
+in order to "export" the contents of the program counter to an external service,
+AKA the monitoring service for assignment 6. The data is displayed in JSON.
+*/
+func MonitorHandler(res http.ResponseWriter, req *http.Request) {
+	LogRequest(req, http.StatusOK)
+	data := counter.Export()
+	dataJson, err := json.Marshal(data)
+	if err != nil {
+		panic(err)
+	}
+	res.Write(dataJson)
 }
