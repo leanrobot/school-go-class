@@ -74,15 +74,12 @@ func Error502(res http.ResponseWriter, req *http.Request) {
 func LogRequest(req *http.Request, statusCode int) {
 	var requestTime string = time.Now().Format(time.RFC1123Z)
 
-	// log the century of the status code
+	// log either the century, or the 404
 	century := (statusCode / 100) * 100
-	if century == 200 || century == 400 {
-		counter.Increment(fmt.Sprintf("%ds", century))
-	}
-
-	// log 404s
 	if statusCode == 404 {
 		counter.Increment(fmt.Sprintf("%ds", statusCode))
+	} else {
+		counter.Increment(fmt.Sprintf("%ds", century))
 	}
 
 	log.Infof(`%s - [%s] "%s %s %s" %d -`,
