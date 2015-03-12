@@ -4,23 +4,24 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	log "github.com/cihub/seelog"
 	"io/ioutil"
+	"math"
 	"net/http"
-	"sort"
 	"strings"
 	"time"
 )
 
 type Sample struct {
-	time  time.Time
-	value int
+	Time  time.Time
+	Value int
 }
 
 const (
 	DEF_SAMPLE_INTERVAL = 10 * time.Second
 	DEF_TIMEOUT         = 5 * time.Second
 	DEF_RUNTIME         = 30 * time.Second
-	DEF_TARGET_STR      = "http://localhost:8080/monitor" //,http://localhost:9090/monitor"
+	DEF_TARGET_STR      = "http://localhost:8080/monitor,http://localhost:9090/monitor"
 )
 
 var (
@@ -28,7 +29,7 @@ var (
 	sampleInterval time.Duration
 	runtime        time.Duration
 
-	dataSet map[string][]Sample
+	dataSet map[string]map[string][]Sample
 
 	client  *http.Client
 	timeout time.Duration
@@ -50,67 +51,72 @@ func initClient() {
 	}
 }
 
+func initStructure() {
+	// make the whole map
+	dataSet = make(map[string]map[string][]Sample)
+	// make a map for every target
+	for _, t := range targets {
+		dataSet[t] = make(map[string][]Sample)
+	}
+}
+
 func main() {
-	dataSet = make(map[string][]Sample)
 	timeout = DEF_TIMEOUT
 	initFlags()
 	initClient()
+	initStructure()
 
-	ticker := time.Tick(sampleInterval)
 	finish := time.Tick(runtime)
+	ticker := time.Tick(sampleInterval)
 
 monitorloop:
 	for {
-		for _, target := range targets {
-			data, err := requestData(target)
-			if err != nil {
-				panic(err) //TODO what to do on failure to monitor?
-			}
-			err = recordResults(data)
-			if err != nil {
-				panic(err) //TODO what to do on failure to monitor?
-			}
-		}
-
 		// tick for collection, or exit the program. precedence is given
 		// to exiting the program over ticking.
 		select {
 		case <-finish:
 			break monitorloop
 		default:
-			select {
-			case <-ticker:
-				break
+			time := <-ticker
+			log.Infof("tick: %v", time)
+		}
+
+		for _, target := range targets {
+			data, err := requestData(target)
+			if err != nil {
+				panic(err) //TODO what to do on failure to monitor?
+			}
+			err = recordResults(target, data)
+			if err != nil {
+				panic(err) //TODO what to do on failure to monitor?
 			}
 		}
+
 	}
 
-	// print the results collected.
-	keys := make([]string, len(dataSet))
-	i := 0
-	for key := range dataSet {
-		keys[i] = key
-		i += 1
-	}
-	sort.Strings(keys)
-	for _, key := range keys {
-		fmt.Println(key, dataSet[key])
-	}
+	// Print the data set collected.
+	json, _ := json.MarshalIndent(dataSet, "  ", "  ")
+	fmt.Println(string(json))
+
 }
 
-func recordResults(data map[string]int) error {
+func recordResults(target string, data map[string]int) error {
+	recordedTime := time.Now()
+	// fmt.Printf("Target [%s]\t\t[%v]\n", target, recordedTime)
 	for key, value := range data {
-		if _, ok := dataSet[key]; !ok {
-			dataSet[key] = make([]Sample, 30)
+		if _, ok := dataSet[target][key]; !ok {
+			// attempts to
+			capacity := int(math.Ceil(float64(runtime / sampleInterval)))
+			dataSet[target][key] = make([]Sample, 0, capacity)
 		}
 
 		sample := Sample{
-			time:  time.Now(),
-			value: value,
+			Time:  recordedTime,
+			Value: value,
 		}
-		dataSet[key] = append(dataSet[key], sample)
+		dataSet[target][key] = append(dataSet[target][key], sample)
 	}
-	return nil // error handling?
+	return nil // TODO error handling?
 }
 
 func requestData(target string) (map[string]int, error) {

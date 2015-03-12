@@ -96,7 +96,6 @@ in order to "export" the contents of the program counter to an external service,
 AKA the monitoring service for assignment 6. The data is displayed in JSON.
 */
 func MonitorHandler(res http.ResponseWriter, req *http.Request) {
-	LogRequest(req, http.StatusOK)
 	data := counter.Export()
 	dataJson, err := json.Marshal(data)
 	if err != nil {
