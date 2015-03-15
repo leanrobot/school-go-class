@@ -77,8 +77,13 @@ monitorloop:
 		case <-finish:
 			break monitorloop
 		default:
-			time := <-ticker
-			log.Infof("tick: %v", time)
+			select {
+			case time := <-ticker:
+				log.Infof("tick: %v", time)
+				break
+			case <-finish:
+				break monitorloop
+			}
 		}
 
 		for _, target := range targets {
