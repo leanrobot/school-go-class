@@ -89,11 +89,11 @@ monitorloop:
 		for _, target := range targets {
 			data, err := requestData(target)
 			if err != nil {
-				panic(err) //TODO what to do on failure to monitor?
+				panic(err)
 			}
 			err = recordResults(target, data)
 			if err != nil {
-				panic(err) //TODO what to do on failure to monitor?
+				panic(err)
 			}
 		}
 
@@ -107,7 +107,6 @@ monitorloop:
 
 func recordResults(target string, data map[string]int) error {
 	recordedTime := time.Now()
-	// fmt.Printf("Target [%s]\t\t[%v]\n", target, recordedTime)
 	for key, value := range data {
 		if _, ok := dataSet[target][key]; !ok {
 			// attempts to
@@ -121,7 +120,7 @@ func recordResults(target string, data map[string]int) error {
 		}
 		dataSet[target][key] = append(dataSet[target][key], sample)
 	}
-	return nil // TODO error handling?
+	return nil
 }
 
 func requestData(target string) (map[string]int, error) {
